@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -20,12 +20,8 @@ const Profile = () => {
         }
         try {
             const [profileRes, requestsRes] = await Promise.all([
-                axios.get("http://localhost:3000/api/auth/profile", {
-                    headers: { Authorization: `Bearer ${token}` }
-                }),
-                axios.get("http://localhost:3000/api/swaps/my-requests", {
-                    headers: { Authorization: `Bearer ${token}` }
-                })
+                api.get("/auth/profile"),
+                api.get("/swaps/my-requests")
             ]);
             setUser(profileRes.data);
             setFormData(profileRes.data);
@@ -45,11 +41,8 @@ const Profile = () => {
 
     const handleUpdate = async (e) => {
         e.preventDefault();
-        const token = localStorage.getItem("token");
         try {
-            const res = await axios.put("http://localhost:3000/api/auth/profile", formData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await api.put("/auth/profile", formData);
             setUser(res.data.user);
             setEditing(false);
             localStorage.setItem("user", JSON.stringify(res.data.user)); // Update local storage too
@@ -59,11 +52,8 @@ const Profile = () => {
     };
 
     const handleStatusUpdate = async (requestId, status) => {
-        const token = localStorage.getItem("token");
         try {
-            await axios.put(`http://localhost:3000/api/swaps/status/${requestId}`, { status }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.put(`/swaps/status/${requestId}`, { status });
             fetchProfileAndRequests(); // Refresh data
         } catch (err) {
             console.error(err);

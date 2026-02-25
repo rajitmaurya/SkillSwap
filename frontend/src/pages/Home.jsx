@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import SkillCard from "../components/SkillCard";
@@ -12,7 +12,7 @@ const Home = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const res = await axios.get("http://localhost:3000/api/users");
+                const res = await api.get("/users");
                 setUsers(res.data);
             } catch (err) {
                 console.error("Error fetching users:", err);

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -33,7 +33,7 @@ const Register = () => {
         };
 
         try {
-            await axios.post("http://localhost:3000/api/auth/register", data);
+            await api.post("/auth/register", data);
             navigate("/login");
         } catch (err) {
             setError(err.response?.data?.message || "Registration failed. Try again.");

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../api/axios";
 
 const SwapModal = ({ isOpen, onClose, receiver }) => {
     const [skillOffered, setSkillOffered] = useState("");
@@ -13,16 +13,13 @@ const SwapModal = ({ isOpen, onClose, receiver }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const token = localStorage.getItem("token");
 
         try {
-            await axios.post("http://localhost:3000/api/swaps/request", {
+            await api.post("/swaps/request", {
                 receiverId: receiver._id,
                 skillOffered,
                 skillWanted,
                 message
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
             setSuccess(true);
             setTimeout(() => {
