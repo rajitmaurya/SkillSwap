@@ -1,12 +1,12 @@
 # 🚀 SkillSwap
 
-> 💡 Turning knowledge into currency through skill exchange  
+>  Turning knowledge into currency through skill exchange  
 
 SkillSwap is a MERN stack based platform that allows users to exchange skills with each other without any monetary cost.
 
 ---
 
-## 🌐 Live Demo  
+##  Live Demo  
 👉 https://skill-swap-henna-mu.vercel.app/
 
 ---
