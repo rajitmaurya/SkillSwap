@@ -165,19 +165,56 @@ AuthController.get("/profile", verifyToken, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-//update
-AuthController.put("/profile", verifyToken, async (req, res) => {
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+// Ensure uploads directory exists
+const uploadDir = 'uploads';
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage: storage });
+
+//update profile
+AuthController.put("/profile", verifyToken, upload.single('avatarFile'), async (req, res) => {
   try {
-    const { username, title, skillsOffered, skillsWanted, avatar } = req.body;
+    let { username, title, skillsOffered, skillsWanted, avatarUrl } = req.body;
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+    
+    // Parse skills if they come as stringified JSON from FormData
+    try {
+       if (skillsOffered && typeof skillsOffered === 'string') skillsOffered = JSON.parse(skillsOffered);
+    } catch(e) {}
+    try {
+       if (skillsWanted && typeof skillsWanted === 'string') skillsWanted = JSON.parse(skillsWanted);
+    } catch(e) {}
+
     if (username) user.username = username;
     if (title) user.title = title;
     if (skillsOffered) user.skillsOffered = skillsOffered;
     if (skillsWanted) user.skillsWanted = skillsWanted;
-    if (avatar) user.avatar = avatar;
+    
+    // Handle avatar image
+    if (req.file) {
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      user.avatar = `${protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    } else if (avatarUrl) {
+      user.avatar = avatarUrl;
+    }
 
     await user.save();
     res.status(200).json({

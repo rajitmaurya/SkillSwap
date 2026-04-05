@@ -204,12 +204,24 @@ const Profile = () => {
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            const payload = {
-                ...formData,
-                skillsOffered: formData.skillsOffered.split(",").map(s => s.trim()).filter(Boolean),
-                skillsWanted: formData.skillsWanted.split(",").map(s => s.trim()).filter(Boolean)
-            };
-            const res = await api.put("/auth/profile", payload);
+            const formDataToSubmit = new FormData();
+            formDataToSubmit.append('username', formData.username || '');
+            formDataToSubmit.append('title', formData.title || '');
+            formDataToSubmit.append('bio', formData.bio || '');
+            formDataToSubmit.append('skillsOffered', JSON.stringify((formData.skillsOffered || '').split(',').map(s=>s.trim()).filter(Boolean)));
+            formDataToSubmit.append('skillsWanted', JSON.stringify((formData.skillsWanted || '').split(',').map(s=>s.trim()).filter(Boolean)));
+            
+            if (formData.avatarFile) {
+                formDataToSubmit.append('avatarFile', formData.avatarFile);
+            } else if (formData.avatar) {
+                formDataToSubmit.append('avatarUrl', formData.avatar);
+            }
+
+            const res = await api.put("/auth/profile", formDataToSubmit, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             setUser(res.data.user);
             setEditingProfile(false);
             localStorage.setItem("user", JSON.stringify(res.data.user)); 
@@ -396,8 +408,16 @@ const Profile = () => {
                         <textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all h-24" placeholder="A short intro about you…" />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Avatar URL</label>
-                        <input type="url" value={formData.avatar} onChange={(e) => setFormData({ ...formData, avatar: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Avatar</label>
+                        <div className="flex gap-2 items-center">
+                           <input type="url" placeholder="Or paste image URL..." value={formData.avatarFile ? '' : formData.avatar} onChange={(e) => setFormData({ ...formData, avatar: e.target.value, avatarFile: null })} className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm" />
+                           <div className="relative">
+                               <input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, avatarFile: e.target.files[0], avatar: '' })} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                               <div className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl border border-slate-200 text-sm whitespace-nowrap">
+                                   {formData.avatarFile ? (formData.avatarFile.name.length > 15 ? formData.avatarFile.name.substring(0,12)+'...' : formData.avatarFile.name) : "Upload Image"}
+                               </div>
+                           </div>
+                        </div>
                     </div>
                     <div className="space-y-1">
                         <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Skills Offered (comma separated)</label>
