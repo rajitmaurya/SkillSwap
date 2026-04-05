@@ -8,6 +8,8 @@ const Register = lazy(() => import("./pages/Register"));
 const Explore = lazy(() => import("./pages/Explore"));
 const Profile = lazy(() => import("./pages/Profile"));
 const LoginSuccess = lazy(() => import("./pages/LoginSuccess"));
+const Teaching = lazy(() => import("./pages/Teaching"));
+const Learning = lazy(() => import("./pages/Learning"));
 
 const PageLoader = () => (
   <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-color)" }}>
@@ -32,6 +34,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/teaching" element={<Teaching />} />
+          <Route path="/learning" element={<Learning />} />
           <Route path="/login-success" element={<LoginSuccess />} />
         </Routes>
       </Suspense>

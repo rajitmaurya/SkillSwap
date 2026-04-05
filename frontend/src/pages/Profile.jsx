@@ -4,479 +4,381 @@ import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-// Simple Icon Components
-const MailIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-);
+// Clean UI Icons
+const SparkleIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /></svg>;
+const BookIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></svg>;
+const BellIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>;
 
 const DefaultAvatar = ({ name, className = "" }) => {
-   const initial = name ? name.charAt(0).toUpperCase() : '?';
-   return (
-      <div className={`flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 text-white font-bold shadow-inner ${className}`}>
-         {initial}
-      </div>
-   );
-};
-
-const EditIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-);
-
-const cx = (...classes) => classes.filter(Boolean).join(" ");
-
-const SurfaceCard = ({ className = "", children }) => (
-  <div className={cx("bg-white rounded-2xl shadow-sm border border-slate-200", className)}>
-    {children}
-  </div>
-);
-
-const Badge = ({ variant = "indigo", children }) => {
-  const styles =
-    variant === "indigo"
-      ? "bg-indigo-50 text-indigo-700 border-indigo-100"
-      : variant === "pink"
-        ? "bg-pink-50 text-pink-700 border-pink-100"
-        : "bg-slate-100 text-slate-700 border-slate-200";
-
+  const initial = name ? name.charAt(0).toUpperCase() : '?';
   return (
-    <span className={cx("px-3 py-1 text-sm font-medium rounded-lg border", styles)}>
-      {children}
-    </span>
-  );
-};
-
-const StatCard = ({ label, value, accent = "text-slate-900", dotColor="bg-slate-500" }) => (
-  <SurfaceCard className="relative p-6 overflow-hidden group hover:shadow-lg hover:border-slate-300 hover:-translate-y-1 transition-all duration-300">
-    <div className={cx("absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -mr-12 -mt-12 transition-all duration-500 group-hover:scale-150 opacity-20", dotColor)} />
-    <div className="flex items-center gap-2 mb-2 relative z-10">
-        <div className={cx("w-2 h-2 rounded-full", dotColor)} />
-        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{label}</p>
-    </div>
-    <p className={cx("text-4xl font-black relative z-10 tracking-tight", accent)}>{value}</p>
-  </SurfaceCard>
-);
-
-const Tabs = ({ value, onChange, items }) => (
-  <div className="flex bg-slate-100/80 p-1.5 rounded-2xl shadow-inner border border-slate-200/50">
-    {items.map((tab) => (
-      <button
-        key={tab.value}
-        onClick={() => onChange(tab.value)}
-        className={cx(
-          "px-5 py-2 text-sm font-bold rounded-xl transition-all duration-300",
-          value === tab.value ? "bg-white text-indigo-700 shadow-sm border border-slate-200/50" : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
-        )}
-        type="button"
-      >
-        {tab.label}
-      </button>
-    ))}
-  </div>
-);
-
-const EmptyState = ({ title, description, actionLabel, onAction }) => (
-  <div className="text-center py-20 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-    <div className="mx-auto w-14 h-14 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center text-slate-400 mb-4">
-      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 opacity-80" />
-    </div>
-    <h3 className="text-lg font-bold text-slate-800">{title}</h3>
-    <p className="text-slate-500 mt-1 max-w-sm mx-auto">{description}</p>
-    <button
-      onClick={onAction}
-      className="mt-6 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
-      type="button"
-    >
-      {actionLabel}
-    </button>
-  </div>
-);
-
-const RequestCard = ({ request, currentUserId, onAccept, onReject }) => {
-  const receiverId = request?.receiver?._id;
-  const senderId = request?.sender?._id;
-  const isIncoming = receiverId && currentUserId && receiverId === currentUserId;
-  const otherUser = isIncoming ? request?.sender : request?.receiver;
-
-  const statusColors = {
-    pending: "bg-amber-50 text-amber-700 border-amber-100",
-    accepted: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    declined: "bg-rose-50 text-rose-700 border-rose-100",
-  };
-
-  const canAct = isIncoming && request?.status === "pending";
-
-  return (
-    <div className="group p-5 rounded-xl border border-slate-100 bg-[#fcfdfe] hover:bg-white hover:border-slate-200 hover:shadow-md transition-all">
-      <div className="flex flex-col sm:flex-row gap-4 items-start">
-        {otherUser?.avatar ? (
-            <img src={otherUser.avatar} alt={otherUser?.username || "User"} className="w-12 h-12 rounded-xl object-cover shadow-sm" />
-        ) : (
-            <DefaultAvatar name={otherUser?.username} className="w-12 h-12 rounded-xl text-lg shadow-sm" />
-        )}
-        <div className="flex-1 min-w-0 w-full">
-          <div className="flex items-center justify-between gap-4 mb-3">
-            <h4 className="font-bold text-slate-900 truncate">
-              <span className="text-slate-400 font-normal mr-1">{isIncoming ? "From" : "To"}</span>
-              {otherUser?.username || "Unknown"}
-            </h4>
-            <span
-              className={cx(
-                "px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border",
-                statusColors[request?.status] || "bg-slate-100 text-slate-700 border-slate-200"
-              )}
-            >
-              {request?.status || "unknown"}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 text-sm">
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <div className="text-[10px] uppercase font-bold text-slate-400">They want to learn</div>
-              <div className="mt-1 font-semibold text-slate-900">{request?.skillWanted || "—"}</div>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <div className="text-[10px] uppercase font-bold text-slate-400">They offer</div>
-              <div className="mt-1 font-semibold text-slate-900">{request?.skillOffered || "—"}</div>
-            </div>
-          </div>
-
-          {request?.message && (
-            <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
-              “{request.message}”
-            </p>
-          )}
-
-          {canAct && (
-            <div className="flex gap-2">
-              <button
-                onClick={() => onAccept(request._id)}
-                className="px-4 py-1.5 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-colors"
-                type="button"
-              >
-                Accept
-              </button>
-              <button
-                onClick={() => onReject(request._id)}
-                className="px-4 py-1.5 bg-white text-rose-700 border border-rose-200 text-sm font-bold rounded-lg hover:bg-rose-50 transition-colors"
-                type="button"
-              >
-                Reject
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+    <div className={`flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold shadow-inner ${className}`}>
+      {initial}
     </div>
   );
 };
 
 const Profile = () => {
-    const [user, setUser] = useState(null);
-    const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [editingProfile, setEditingProfile] = useState(false);
-    const [formData, setFormData] = useState({});
-    const [activeTab, setActiveTab] = useState("all");
-    
-    const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    const fetchProfileAndRequests = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            navigate("/login");
-            return;
-        }
-        try {
-            const [profileRes, requestsRes] = await Promise.all([
-                api.get("/auth/profile"),
-                api.get("/swaps/my-requests")
-            ]);
-            setUser(profileRes.data);
-            setFormData({
-                username: profileRes.data.username || "",
-                title: profileRes.data.title || "",
-                bio: profileRes.data.bio || "",
-                skillsOffered: profileRes.data.skillsOffered?.join(", ") || "",
-                skillsWanted: profileRes.data.skillsWanted?.join(", ") || "",
-                avatar: profileRes.data.avatar || ""
-            });
-            setRequests(requestsRes.data);
-        } catch (err) {
-            console.error(err);
-            localStorage.removeItem("token");
-            navigate("/login");
-        } finally {
-            setLoading(false);
-        }
+  // Tab State
+  const [activeTab, setActiveTab] = useState("all");
+
+  // Restored State for Editing
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [formData, setFormData] = useState({});
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const profile = await api.get("/auth/profile");
+        const reqs = await api.get("/swaps/my-requests");
+
+        setUser(profile.data);
+        setFormData({
+          username: profile.data.username || "",
+          title: profile.data.title || "",
+          bio: profile.data.bio || "",
+          skillsOffered: profile.data.skillsOffered?.join(", ") || "",
+          skillsWanted: profile.data.skillsWanted?.join(", ") || "",
+          avatar: profile.data.avatar || ""
+        });
+        setRequests(reqs.data);
+      } catch (err) {
+        navigate("/login");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    useEffect(() => {
-        fetchProfileAndRequests();
-    }, [navigate]);
+    fetchData();
+  }, [navigate]);
 
-    const handleUpdate = async (e) => {
-        e.preventDefault();
-        try {
-            const formDataToSubmit = new FormData();
-            formDataToSubmit.append('username', formData.username || '');
-            formDataToSubmit.append('title', formData.title || '');
-            formDataToSubmit.append('bio', formData.bio || '');
-            formDataToSubmit.append('skillsOffered', JSON.stringify((formData.skillsOffered || '').split(',').map(s=>s.trim()).filter(Boolean)));
-            formDataToSubmit.append('skillsWanted', JSON.stringify((formData.skillsWanted || '').split(',').map(s=>s.trim()).filter(Boolean)));
-            
-            if (formData.avatarFile) {
-                formDataToSubmit.append('avatarFile', formData.avatarFile);
-            } else if (formData.avatar) {
-                formDataToSubmit.append('avatarUrl', formData.avatar);
-            }
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const formDataToSubmit = new FormData();
+      formDataToSubmit.append('username', formData.username || '');
+      formDataToSubmit.append('title', formData.title || '');
+      formDataToSubmit.append('bio', formData.bio || '');
+      formDataToSubmit.append('skillsOffered', JSON.stringify((formData.skillsOffered || '').split(',').map(s => s.trim()).filter(Boolean)));
+      formDataToSubmit.append('skillsWanted', JSON.stringify((formData.skillsWanted || '').split(',').map(s => s.trim()).filter(Boolean)));
 
-            const res = await api.put("/auth/profile", formDataToSubmit, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            setUser(res.data.user);
-            setEditingProfile(false);
-            localStorage.setItem("user", JSON.stringify(res.data.user)); 
-        } catch (err) {
-            console.error(err);
-        }
-    };
+      if (formData.avatarFile) {
+        formDataToSubmit.append('avatarFile', formData.avatarFile);
+      } else if (formData.avatar) {
+        formDataToSubmit.append('avatarUrl', formData.avatar);
+      }
 
-    const handleStatusUpdate = async (requestId, status) => {
-        try {
-            await api.put(`/swaps/status/${requestId}`, { status });
-            fetchProfileAndRequests(); 
-        } catch (err) {
-            console.error(err);
-        }
-    };
+      const res = await api.put("/auth/profile", formDataToSubmit, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setUser(res.data.user);
+      setEditingProfile(false);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    if (loading) return (
-      <div className="min-h-screen bg-slate-50 flex flex-col pt-20">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-        </div>
-        <Footer />
+  const handleStatusUpdate = async (requestId, status) => {
+    try {
+      await api.put(`/swaps/status/${requestId}`, { status });
+      const reqs = await api.get("/swaps/my-requests");
+      setRequests(reqs.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
+  }
 
-    const filteredRequests = activeTab === "all" 
-      ? requests 
-      : activeTab === "incoming" 
-        ? requests.filter(req => req?.receiver?._id === user?._id) 
-        : requests.filter(req => req?.sender?._id === user?._id);
+  // Filter requests based on tabs
+  const filteredRequests = activeTab === "all" ? requests : activeTab === "incoming" ? requests.filter(req => req?.receiver?._id === user?._id) : requests.filter(req => req?.sender?._id === user?._id);
 
-    return (
-        <div className="min-h-screen bg-[#f8fafc] font-['Outfit']">
-            <Navbar />
-            
-            {/* Premium SaaS Banner */}
-            <div className="h-56 w-full relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/30 via-transparent to-transparent" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-violet-600/20 via-transparent to-transparent" />
-                <svg className="absolute w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <pattern id="grid-pattern" width="32" height="32" patternUnits="userSpaceOnUse">
-                            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="white" strokeWidth="1"/>
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#grid-pattern)" />
-                </svg>
-                <div className="absolute inset-0 bg-gradient-to-t from-[#f8fafc] to-transparent h-full transform translate-y-2/3" />
-            </div>
+  return (
+    <div className="min-h-screen bg-white">
+      <Navbar />
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 pb-20">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    
-                    {/* Sidebar: Profile Info */}
-                    <div className="lg:col-span-4 space-y-6">
-                        <SurfaceCard className="p-6 relative overflow-hidden backdrop-blur-xl bg-white/90 border-white/20">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
-                            <div className="flex flex-col items-center text-center relative z-10">
-                                <div className="relative group">
-                                    {user.avatar ? (
-                                        <img src={user.avatar} alt={user.username} className="w-32 h-32 rounded-[2rem] object-cover ring-4 ring-white/80 shadow-2xl shadow-indigo-500/20 transition-transform duration-300 group-hover:scale-[1.03]" />
-                                    ) : (
-                                        <DefaultAvatar name={user.username} className="w-32 h-32 rounded-[2rem] text-4xl ring-4 ring-white/80 shadow-2xl shadow-slate-900/20 transition-transform duration-300 group-hover:scale-[1.03]" />
-                                    )}
-                                    <div className="absolute -bottom-2 -right-2 bg-white p-1.5 rounded-lg shadow border border-slate-100">
-                                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">{user.role || 'Member'}</span>
-                                    </div>
-                                </div>
-                                
-                                <h1 className="mt-6 text-2xl font-bold text-slate-900">{user.username}</h1>
-                                <p className="text-indigo-600 font-medium">{user.title || (user.role === "Mentor" ? "Mentor" : "Member")}</p>
-                                <p className="mt-3 text-sm text-slate-600 max-w-sm">
-                                  {user.bio || "Add a short bio to help others understand what you’re great at and what you’re learning next."}
-                                </p>
-                                
-                                <div className="mt-4 flex items-center gap-2 text-slate-500 text-sm">
-                                  <MailIcon />
-                                  <span>{user.email}</span>
-                                </div>
+      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
 
-                                <button 
-                                  onClick={() => setEditingProfile(true)}
-                                  className="mt-8 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
-                                >
-                                  <EditIcon />
-                                  Edit Profile
-                                </button>
-                            </div>
-                        </SurfaceCard>
+        {/* 🌟 FULL-WIDTH PROFILE HEADER */}
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+          {/* Cover Photo */}
+          <div className="h-40 sm:h-48 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
+          </div>
 
-                        {/* Skills Section */}
-                        <SurfaceCard className="p-6 space-y-8">
-                            <div>
-                                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 text-center lg:text-left">Skills Offered</h3>
-                                <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-                                    {user.skillsOffered?.length > 0 ? (
-                                        user.skillsOffered.map((skill, i) => (
-                                          <Badge key={`${skill}-${i}`} variant="indigo">{skill}</Badge>
-                                        ))
-                                    ) : (
-                                        <p className="text-sm text-slate-400 italic">No skills listed</p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="pt-6 border-t border-slate-50">
-                                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 text-center lg:text-left">Skills Wanted</h3>
-                                <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-                                    {user.skillsWanted?.length > 0 ? (
-                                        user.skillsWanted.map((skill, i) => (
-                                          <Badge key={`${skill}-${i}`} variant="pink">{skill}</Badge>
-                                        ))
-                                    ) : (
-                                        <p className="text-sm text-slate-400 italic">No skills listed</p>
-                                    )}
-                                </div>
-                            </div>
-                        </SurfaceCard>
-                    </div>
-
-                    {/* Main Content: Stats & Requests */}
-                    <div className="lg:col-span-8 space-y-8">
-                        
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                            <StatCard label="Skills Offered" value={user.skillsOffered?.length || 0} accent="text-indigo-600" dotColor="bg-indigo-500" />
-                            <StatCard label="Skills Wanted" value={user.skillsWanted?.length || 0} accent="text-pink-600" dotColor="bg-pink-500" />
-                            <StatCard label="Total Requests" value={requests.length} accent="text-slate-900" dotColor="bg-slate-500" />
-                        </div>
-
-                        {/* Dashboard Card */}
-                        <SurfaceCard className="overflow-hidden">
-                            <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <h2 className="text-xl font-bold text-slate-900">Swap Requests</h2>
-                                
-                                <Tabs
-                                  value={activeTab}
-                                  onChange={setActiveTab}
-                                  items={[
-                                    { value: "all", label: "All" },
-                                    { value: "incoming", label: "Incoming" },
-                                    { value: "outgoing", label: "Outgoing" },
-                                  ]}
-                                />
-                            </div>
-
-                            <div className="p-6">
-                                {filteredRequests.length === 0 ? (
-                                    <EmptyState
-                                      title="No swap requests yet"
-                                      description="When someone requests a swap with you (or you request one), it’ll show up here."
-                                      actionLabel="Explore Mentors"
-                                      onAction={() => navigate("/explore")}
-                                    />
-                                ) : (
-                                    <div className="space-y-4">
-                                        {filteredRequests.map((req) => (
-                                          <RequestCard
-                                            key={req._id}
-                                            request={req}
-                                            currentUserId={user?._id}
-                                            onAccept={(id) => handleStatusUpdate(id, "accepted")}
-                                            onReject={(id) => handleStatusUpdate(id, "declined")}
-                                          />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </SurfaceCard>
-                    </div>
+          <div className="px-6 sm:px-10 pb-8">
+            {/* Avatar & Action Row */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 -mt-16 sm:-mt-20 relative z-10 text-center sm:text-left">
+              <div className="flex flex-col items-center sm:flex-row sm:items-end gap-4 sm:gap-6 w-full sm:w-auto">
+                <div className="shrink-0 inline-block relative mx-auto sm:mx-0">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt="Profile"
+                      className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover ring-4 ring-white shadow-md bg-white relative z-10 mx-auto sm:mx-0"
+                    />
+                  ) : (
+                    <DefaultAvatar name={user.username} className="w-32 h-32 sm:w-40 sm:h-40 rounded-full text-5xl ring-4 ring-white shadow-md bg-white border border-slate-100 relative z-10 mx-auto sm:mx-0" />
+                  )}
                 </div>
-            </main>
-
-            {/* Edit Modal / Slide-over could be here - for now using a quick simple overlay */}
-            {editingProfile && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 self-center">
-                  <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                    <h3 className="font-bold text-slate-800">Edit Profile</h3>
-                    <button onClick={() => setEditingProfile(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
-                  </div>
-                  <form onSubmit={handleUpdate} className="p-6 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Username</label>
-                        <input type="text" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" required />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Title</label>
-                        <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Bio</label>
-                        <textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all h-24" placeholder="A short intro about you…" />
-                    </div>
-                    <div className="space-y-2 pt-2">
-                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Profile Picture</label>
-                        <div className="flex flex-col gap-3">
-                           <div className="flex items-center gap-4">
-                               <div className="shrink-0">
-                                   {formData.avatarFile ? (
-                                       <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100 text-indigo-500 font-bold text-xs uppercase tracking-wider overflow-hidden">
-                                           <img src={URL.createObjectURL(formData.avatarFile)} className="w-full h-full object-cover" alt="preview" />
-                                       </div>
-                                   ) : user.avatar ? (
-                                       <img src={user.avatar} className="w-16 h-16 rounded-2xl object-cover border border-slate-200" alt="current" />
-                                   ) : (
-                                       <DefaultAvatar name={formData.username} className="w-16 h-16 rounded-2xl text-xl" />
-                                   )}
-                               </div>
-                               <div className="relative flex-1">
-                                   <input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, avatarFile: e.target.files[0] })} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                                   <div className="w-full px-4 py-3 bg-white hover:bg-slate-50 text-indigo-600 font-bold rounded-xl border-2 border-dashed border-indigo-200 hover:border-indigo-400 text-sm flex items-center justify-center transition-all shadow-sm">
-                                       {formData.avatarFile ? `Selected: ${formData.avatarFile.name}` : "Upload New Image"}
-                                   </div>
-                               </div>
-                           </div>
-                        </div>
-                    </div>
-                    <div className="space-y-1 pt-2">
-                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Skills Offered (comma separated)</label>
-                        <textarea value={formData.skillsOffered} onChange={(e) => setFormData({ ...formData, skillsOffered: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all h-20" />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Skills Wanted (comma separated)</label>
-                        <textarea value={formData.skillsWanted} onChange={(e) => setFormData({ ...formData, skillsWanted: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all h-20" />
-                    </div>
-                    <div className="pt-4 flex gap-3">
-                      <button type="button" onClick={() => setEditingProfile(false)} className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
-                      <button type="submit" className="flex-1 px-4 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100">Save Changes</button>
-                    </div>
-                  </form>
+                <div className="mb-2 mt-2 sm:mt-0">
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">{user.username}</h2>
+                  <p className="inline-block px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full font-bold uppercase tracking-wider text-[10px] mt-2 sm:mt-1">{user.title || "Member"}</p>
                 </div>
               </div>
-            )}
 
-            <Footer />
+              <div className="shrink-0 mb-2 w-full sm:w-auto mt-4 sm:mt-0">
+                <button
+                  onClick={() => setEditingProfile(true)}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                >
+                  Edit Profile
+                </button>
+              </div>
+            </div>
+
+            {/* Bio & Contact Details */}
+            <div className="mt-6 flex flex-col md:flex-row justify-between items-start gap-6">
+              <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">
+                {user.bio || "Add a short bio to help others understand your expertise and what you're passionate about learning."}
+              </p>
+
+              <div className="shrink-0">
+                <p className="text-sm font-medium text-slate-500 bg-slate-50 inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200">
+                  <svg className="w-4 h-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+                  {user.email}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-    );
+
+        <div className="grid lg:grid-cols-12 gap-8 items-start">
+
+          {/* 👤 LEFT SIDEBAR - Skills Block */}
+          <div className="lg:col-span-4 space-y-8">
+            {/* SKILLS */}
+            <div className="px-6 py-6 bg-slate-50 border border-slate-200 rounded-3xl shadow-sm">
+              <h4 className="font-bold text-[10px] uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5"><SparkleIcon className="w-3.5 h-3.5 text-indigo-400" /> Skills Offered</h4>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {user.skillsOffered?.length > 0 ? user.skillsOffered.map((s, i) => (
+                  <span key={i} className="px-3 py-1 text-xs font-bold rounded-lg bg-indigo-100 text-indigo-700 border border-indigo-200 shadow-sm">
+                    {s}
+                  </span>
+                )) : <p className="text-xs text-slate-400 italic">None specified</p>}
+              </div>
+
+              <div className="pt-6 border-t border-slate-200/60">
+                <h4 className="font-bold text-[10px] uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5"><BookIcon className="w-3.5 h-3.5 text-pink-400" /> Learning Focus</h4>
+                <div className="flex flex-wrap gap-2">
+                  {user.skillsWanted?.length > 0 ? user.skillsWanted.map((s, i) => (
+                    <span key={i} className="px-3 py-1 text-xs font-bold rounded-lg bg-pink-100 text-pink-700 border border-pink-200 shadow-sm">
+                      {s}
+                    </span>
+                  )) : <p className="text-xs text-slate-400 italic">None specified</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 📊 RIGHT SIDE */}
+          <div className="lg:col-span-8 space-y-8">
+
+            {/* STATS OVERVIEW */}
+            <div className="grid grid-cols-1 gap-4 lg:gap-6">
+              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-md relative overflow-hidden group w-full lg:w-1/3">
+                <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/20 rounded-bl-full blur-2xl transition-all duration-500 group-hover:bg-indigo-500/30"></div>
+                <div className="flex items-center gap-3 mb-4 relative z-10">
+                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/5">
+                    <BellIcon className="w-5 h-5 text-indigo-300" />
+                  </div>
+                  <p className="text-xs font-bold uppercase text-slate-400 tracking-wider">Requests</p>
+                </div>
+                <h2 className="text-4xl font-black text-white relative z-10">{requests.length} <span className="text-lg font-bold text-slate-400">Total</span></h2>
+              </div>
+            </div>
+
+            {/* REQUESTS DASHBOARD */}
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <h3 className="font-black text-2xl text-slate-900">Connections Hub</h3>
+
+                {/* Clean Tab Navigator */}
+                <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner border border-slate-200/60">
+                  {['all', 'incoming', 'outgoing'].map(tab => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`px-4 py-1.5 text-xs font-bold capitalize rounded-lg transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow border border-slate-200/50' : 'text-slate-500 hover:text-slate-800'}`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {filteredRequests.length === 0 ? (
+                <div className="text-center py-20 bg-slate-50/80 rounded-2xl border border-dashed border-slate-200">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100">
+                    <BellIcon className="w-6 h-6 text-slate-300" />
+                  </div>
+                  <p className="text-slate-500 font-bold mb-1">No {activeTab !== 'all' ? activeTab : ''} requests found</p>
+                  <p className="text-sm text-slate-400 max-w-sm mx-auto">When someone requests a swap with you (or you request one), it will appear here.</p>
+                  <button
+                    onClick={() => navigate("/explore")}
+                    className="mt-6 px-6 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold hover:bg-slate-50 hover:text-indigo-600 shadow-sm transition-all"
+                  >
+                    Find Mentors
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredRequests.map((r) => {
+                    const isIncoming = r?.receiver?._id === user?._id;
+                    const canAct = isIncoming && r.status === "pending";
+                    const otherPerson = isIncoming ? r?.sender : r?.receiver;
+
+                    return (
+                      <div key={r._id} className="p-1 rounded-2xl bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all group">
+                        <div className="p-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row gap-5 items-start">
+                          {/* Avatar */}
+                          <div className="shrink-0">
+                            {otherPerson?.avatar ? (
+                              <img src={otherPerson.avatar} className="w-14 h-14 rounded-full object-cover ring-2 ring-slate-100" alt="Avatar" />
+                            ) : (
+                              <DefaultAvatar name={otherPerson?.username} className="w-14 h-14 rounded-full text-lg border border-slate-100" />
+                            )}
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1 w-full min-w-0">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <p className="text-xs font-bold uppercase text-slate-400 mb-0.5">{isIncoming ? "Incoming from" : "Sent to"}</p>
+                                <p className="font-bold text-lg text-slate-900 truncate">{otherPerson?.username || "Unknown User"}</p>
+                              </div>
+                              <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border ${r.status === 'accepted' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                r.status === 'declined' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                                  'bg-amber-50 text-amber-700 border-amber-200'
+                                }`}>
+                                {r.status}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-col xs:flex-row sm:items-center gap-3 mt-3 text-sm">
+                              <div className="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-100 w-full">
+                                <p className="text-[10px] font-bold uppercase text-slate-400 mb-1">They want to learn</p>
+                                <p className="font-medium text-slate-800">{r.skillWanted}</p>
+                              </div>
+                              <div className="shrink-0 text-slate-300 hidden sm:block">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                              </div>
+                              <div className="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-100 w-full">
+                                <p className="text-[10px] font-bold uppercase text-slate-400 mb-1">They offer</p>
+                                <p className="font-medium text-slate-800">{r.skillOffered}</p>
+                              </div>
+                            </div>
+
+                            {canAct && (
+                              <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100">
+                                <button onClick={() => handleStatusUpdate(r._id, "accepted")} className="px-5 py-2 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-indigo-600 transition-colors shadow-sm">Accept Request</button>
+                                <button onClick={() => handleStatusUpdate(r._id, "declined")} className="px-5 py-2 bg-white text-rose-600 border border-slate-200 text-sm font-bold rounded-xl hover:bg-rose-50 hover:border-rose-200 transition-colors">Decline</button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* Restored Responsive Edit User Modal */}
+      {editingProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 self-center">
+            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800">Edit Profile</h3>
+              <button onClick={() => setEditingProfile(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            <form onSubmit={handleUpdate} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Username</label>
+                  <input type="text" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" required />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Title</label>
+                  <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Bio</label>
+                <textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all h-24" placeholder="A short intro about you…" />
+              </div>
+              <div className="space-y-2 pt-2">
+                <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Profile Picture</label>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-4">
+                    <div className="shrink-0">
+                      {formData.avatarFile ? (
+                        <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100 text-indigo-500 font-bold text-xs uppercase tracking-wider overflow-hidden">
+                          <img src={URL.createObjectURL(formData.avatarFile)} className="w-full h-full object-cover" alt="preview" />
+                        </div>
+                      ) : user.avatar ? (
+                        <img src={user.avatar} className="w-16 h-16 rounded-2xl object-cover border border-slate-200" alt="current" />
+                      ) : (
+                        <DefaultAvatar name={formData.username} className="w-16 h-16 rounded-2xl text-xl" />
+                      )}
+                    </div>
+                    <div className="relative flex-1">
+                      <input type="file" accept="image/*" onChange={(e) => setFormData({ ...formData, avatarFile: e.target.files[0] })} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                      <div className="w-full px-4 py-3 bg-white hover:bg-slate-50 text-indigo-600 font-bold rounded-xl border-2 border-dashed border-indigo-200 hover:border-indigo-400 text-sm flex items-center justify-center transition-all shadow-sm">
+                        {formData.avatarFile ? `Selected: ${formData.avatarFile.name}` : "Upload New Image"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1 pt-2">
+                <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Skills Offered (comma separated)</label>
+                <textarea value={formData.skillsOffered} onChange={(e) => setFormData({ ...formData, skillsOffered: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all h-20" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Skills Wanted (comma separated)</label>
+                <textarea value={formData.skillsWanted} onChange={(e) => setFormData({ ...formData, skillsWanted: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all h-20" />
+              </div>
+              <div className="pt-4 flex gap-3">
+                <button type="button" onClick={() => setEditingProfile(false)} className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-md">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <Footer />
+    </div>
+  );
 };
 
 export default Profile;

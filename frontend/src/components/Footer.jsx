@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 const Footer = () => {
     return (
         <footer style={{
-            padding: "3rem 0 2rem",
-            background: "var(--surface-color)",
+            padding: "1.5rem 0 1rem",
+            background: "#ffffff",
             borderTop: "1px solid var(--border)",
             marginTop: "auto"
         }}>
@@ -13,8 +13,8 @@ const Footer = () => {
                 <div style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                    gap: "1.5rem",
-                    marginBottom: "2.5rem"
+                    gap: "1rem",
+                    marginBottom: "1rem"
                 }}>
                     {/* Brand Column */}
                     <div style={{ gridColumn: "span 2" }}>
@@ -62,7 +62,7 @@ const Footer = () => {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    paddingTop: "1.5rem",
+                    paddingTop: "1rem",
                     borderTop: "1px solid var(--border)",
                     color: "var(--text-muted)",
                     fontSize: "0.8rem"
