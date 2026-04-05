@@ -57,7 +57,8 @@ SwapController.get("/my-requests", verifyToken, async (req, res) => {
         })
             .populate("sender", "username email title avatar")
             .populate("receiver", "username email title avatar")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .lean();
 
         res.status(200).json(requests);
     } catch (err) {

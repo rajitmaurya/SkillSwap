@@ -148,7 +148,7 @@ const verifyToken = (req, res, next) => {
 
 AuthController.get("/profiles", verifyToken, async (req, res) => {
   try {
-    const users = await User.find({});
+    const users = await User.find({}).lean();
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -156,7 +156,7 @@ AuthController.get("/profiles", verifyToken, async (req, res) => {
 });
 AuthController.get("/profile", verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user.id).select("-password").lean();
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

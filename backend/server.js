@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import compression from "compression";
 import AuthController from "./controllers/AuthController.js";
 import SwapController from "./controllers/SwapController.js";
 import UserController from "./controllers/UserController.js";
@@ -17,6 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
