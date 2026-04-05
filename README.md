@@ -6,8 +6,7 @@ SkillSwap is a MERN stack based platform that allows users to exchange skills wi
 
 ---
 
-##  Live Demo  
-👉 https://skill-swap-henna-mu.vercel.app/
+
 
 ---
 
