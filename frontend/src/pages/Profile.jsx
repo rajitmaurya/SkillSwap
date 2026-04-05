@@ -4,12 +4,167 @@ import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
+// Simple Icon Components
+const MailIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+);
+
+const EditIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+);
+
+const cx = (...classes) => classes.filter(Boolean).join(" ");
+
+const SurfaceCard = ({ className = "", children }) => (
+  <div className={cx("bg-white rounded-2xl shadow-sm border border-slate-200", className)}>
+    {children}
+  </div>
+);
+
+const Badge = ({ variant = "indigo", children }) => {
+  const styles =
+    variant === "indigo"
+      ? "bg-indigo-50 text-indigo-700 border-indigo-100"
+      : variant === "pink"
+        ? "bg-pink-50 text-pink-700 border-pink-100"
+        : "bg-slate-100 text-slate-700 border-slate-200";
+
+  return (
+    <span className={cx("px-3 py-1 text-sm font-medium rounded-lg border", styles)}>
+      {children}
+    </span>
+  );
+};
+
+const StatCard = ({ label, value, accent = "text-slate-900" }) => (
+  <SurfaceCard className="p-6">
+    <p className="text-sm text-slate-500 font-medium">{label}</p>
+    <p className={cx("text-3xl font-bold mt-1", accent)}>{value}</p>
+  </SurfaceCard>
+);
+
+const Tabs = ({ value, onChange, items }) => (
+  <div className="flex bg-slate-100 p-1 rounded-xl">
+    {items.map((tab) => (
+      <button
+        key={tab.value}
+        onClick={() => onChange(tab.value)}
+        className={cx(
+          "px-4 py-1.5 text-sm font-semibold rounded-lg transition-all",
+          value === tab.value ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+        )}
+        type="button"
+      >
+        {tab.label}
+      </button>
+    ))}
+  </div>
+);
+
+const EmptyState = ({ title, description, actionLabel, onAction }) => (
+  <div className="text-center py-20 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+    <div className="mx-auto w-14 h-14 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center text-slate-400 mb-4">
+      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 opacity-80" />
+    </div>
+    <h3 className="text-lg font-bold text-slate-800">{title}</h3>
+    <p className="text-slate-500 mt-1 max-w-sm mx-auto">{description}</p>
+    <button
+      onClick={onAction}
+      className="mt-6 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
+      type="button"
+    >
+      {actionLabel}
+    </button>
+  </div>
+);
+
+const RequestCard = ({ request, currentUserId, onAccept, onReject }) => {
+  const receiverId = request?.receiver?._id;
+  const senderId = request?.sender?._id;
+  const isIncoming = receiverId && currentUserId && receiverId === currentUserId;
+  const otherUser = isIncoming ? request?.sender : request?.receiver;
+
+  const statusColors = {
+    pending: "bg-amber-50 text-amber-700 border-amber-100",
+    accepted: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    declined: "bg-rose-50 text-rose-700 border-rose-100",
+  };
+
+  const canAct = isIncoming && request?.status === "pending";
+
+  return (
+    <div className="group p-5 rounded-xl border border-slate-100 bg-[#fcfdfe] hover:bg-white hover:border-slate-200 hover:shadow-md transition-all">
+      <div className="flex flex-col sm:flex-row gap-4 items-start">
+        <img
+          src={otherUser?.avatar || `https://i.pravatar.cc/150?u=${otherUser?._id || senderId || receiverId || request?._id}`}
+          alt={otherUser?.username || "User"}
+          className="w-12 h-12 rounded-xl object-cover"
+        />
+        <div className="flex-1 min-w-0 w-full">
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <h4 className="font-bold text-slate-900 truncate">
+              <span className="text-slate-400 font-normal mr-1">{isIncoming ? "From" : "To"}</span>
+              {otherUser?.username || "Unknown"}
+            </h4>
+            <span
+              className={cx(
+                "px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border",
+                statusColors[request?.status] || "bg-slate-100 text-slate-700 border-slate-200"
+              )}
+            >
+              {request?.status || "unknown"}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 text-sm">
+            <div className="rounded-lg border border-slate-200 bg-white p-3">
+              <div className="text-[10px] uppercase font-bold text-slate-400">They want to learn</div>
+              <div className="mt-1 font-semibold text-slate-900">{request?.skillWanted || "—"}</div>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-white p-3">
+              <div className="text-[10px] uppercase font-bold text-slate-400">They offer</div>
+              <div className="mt-1 font-semibold text-slate-900">{request?.skillOffered || "—"}</div>
+            </div>
+          </div>
+
+          {request?.message && (
+            <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
+              “{request.message}”
+            </p>
+          )}
+
+          {canAct && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => onAccept(request._id)}
+                className="px-4 py-1.5 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-colors"
+                type="button"
+              >
+                Accept
+              </button>
+              <button
+                onClick={() => onReject(request._id)}
+                className="px-4 py-1.5 bg-white text-rose-700 border border-rose-200 text-sm font-bold rounded-lg hover:bg-rose-50 transition-colors"
+                type="button"
+              >
+                Reject
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Profile = () => {
     const [user, setUser] = useState(null);
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [editing, setEditing] = useState(false);
+    const [editingProfile, setEditingProfile] = useState(false);
     const [formData, setFormData] = useState({});
+    const [activeTab, setActiveTab] = useState("all");
+    
     const navigate = useNavigate();
 
     const fetchProfileAndRequests = async () => {
@@ -24,7 +179,14 @@ const Profile = () => {
                 api.get("/swaps/my-requests")
             ]);
             setUser(profileRes.data);
-            setFormData(profileRes.data);
+            setFormData({
+                username: profileRes.data.username || "",
+                title: profileRes.data.title || "",
+                bio: profileRes.data.bio || "",
+                skillsOffered: profileRes.data.skillsOffered?.join(", ") || "",
+                skillsWanted: profileRes.data.skillsWanted?.join(", ") || "",
+                avatar: profileRes.data.avatar || ""
+            });
             setRequests(requestsRes.data);
         } catch (err) {
             console.error(err);
@@ -42,10 +204,15 @@ const Profile = () => {
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            const res = await api.put("/auth/profile", formData);
+            const payload = {
+                ...formData,
+                skillsOffered: formData.skillsOffered.split(",").map(s => s.trim()).filter(Boolean),
+                skillsWanted: formData.skillsWanted.split(",").map(s => s.trim()).filter(Boolean)
+            };
+            const res = await api.put("/auth/profile", payload);
             setUser(res.data.user);
-            setEditing(false);
-            localStorage.setItem("user", JSON.stringify(res.data.user)); // Update local storage too
+            setEditingProfile(false);
+            localStorage.setItem("user", JSON.stringify(res.data.user)); 
         } catch (err) {
             console.error(err);
         }
@@ -54,180 +221,201 @@ const Profile = () => {
     const handleStatusUpdate = async (requestId, status) => {
         try {
             await api.put(`/swaps/status/${requestId}`, { status });
-            fetchProfileAndRequests(); // Refresh data
+            fetchProfileAndRequests(); 
         } catch (err) {
             console.error(err);
         }
     };
 
-    if (loading) return <div style={{ paddingTop: "100px", textAlign: "center", color: "var(--text-main)" }}>Loading...</div>;
+    if (loading) return (
+      <div className="min-h-screen bg-slate-50 flex flex-col pt-20">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+
+    const filteredRequests = activeTab === "all" 
+      ? requests 
+      : activeTab === "incoming" 
+        ? requests.filter(req => req?.receiver?._id === user?._id) 
+        : requests.filter(req => req?.sender?._id === user?._id);
 
     return (
-        <div style={{ minHeight: "100vh" }}>
+        <div className="min-h-screen bg-[#f8fafc] font-['Outfit']">
             <Navbar />
-            <div className="container" style={{ paddingTop: "8rem", paddingBottom: "5rem" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "2rem", alignItems: "start" }}>
+            
+            {/* SaaS Banner */}
+            <div className="h-48 bg-gradient-to-r from-indigo-600 to-violet-700 w-full" />
 
-                    {/* Profile Section */}
-                    <div className="glass animate-fade-in" style={{ padding: "2.5rem", borderRadius: "32px", position: "sticky", top: "100px" }}>
-                        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-                            <img
-                                src={user.avatar || `https://i.pravatar.cc/150?u=${user.id}`}
-                                alt={user.username}
-                                style={{ width: "120px", height: "120px", borderRadius: "40px", objectFit: "cover", border: "4px solid var(--primary)", marginBottom: "1.5rem" }}
-                            />
-                            <h1 style={{ fontSize: "1.8rem", marginBottom: "0.2rem" }}>{user.username}</h1>
-                            <p style={{ color: "var(--primary)", fontWeight: "500", marginBottom: "0.5rem" }}>{user.title}</p>
-                            <p style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>{user.email}</p>
-                        </div>
-
-                        <button
-                            onClick={() => setEditing(!editing)}
-                            style={{
-                                width: "100%",
-                                padding: "0.8rem",
-                                background: editing ? "var(--surface-hover)" : "var(--primary)",
-                                color: "white",
-                                borderRadius: "15px",
-                                fontWeight: "600",
-                                marginBottom: "2rem"
-                            }}
-                        >
-                            {editing ? "Cancel Edit" : "Edit Profile"}
-                        </button>
-
-                        {editing && (
-                            <form onSubmit={handleUpdate} style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
-                                <div>
-                                    <label className="label">Username</label>
-                                    <input type="text" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} className="profile-input" />
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 pb-20">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    
+                    {/* Sidebar: Profile Info */}
+                    <div className="lg:col-span-4 space-y-6">
+                        <SurfaceCard className="p-6">
+                            <div className="flex flex-col items-center text-center">
+                                <div className="relative group">
+                                    <img
+                                        src={user.avatar || `https://i.pravatar.cc/150?u=${user._id}`}
+                                        alt={user.username}
+                                        className="w-32 h-32 rounded-2xl object-cover ring-4 ring-white shadow-xl transition-transform group-hover:scale-[1.02]"
+                                    />
+                                    <div className="absolute -bottom-2 -right-2 bg-white p-1.5 rounded-lg shadow border border-slate-100">
+                                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">{user.role || 'Member'}</span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="label">Title</label>
-                                    <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="profile-input" />
+                                
+                                <h1 className="mt-6 text-2xl font-bold text-slate-900">{user.username}</h1>
+                                <p className="text-indigo-600 font-medium">{user.title || (user.role === "Mentor" ? "Mentor" : "Member")}</p>
+                                <p className="mt-3 text-sm text-slate-600 max-w-sm">
+                                  {user.bio || "Add a short bio to help others understand what you’re great at and what you’re learning next."}
+                                </p>
+                                
+                                <div className="mt-4 flex items-center gap-2 text-slate-500 text-sm">
+                                  <MailIcon />
+                                  <span>{user.email}</span>
                                 </div>
-                                <button type="submit" className="save-btn">Save Changes</button>
-                            </form>
-                        )}
 
-                        <div style={{ marginTop: "2rem" }}>
-                            <h3 style={{ fontSize: "1rem", marginBottom: "1rem" }}>My Skills</h3>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                                {user.skillsOffered?.map(skill => (
-                                    <span key={skill} style={{ background: "rgba(99, 102, 241, 0.1)", color: "var(--primary)", padding: "0.3rem 0.8rem", borderRadius: "50px", fontSize: "0.8rem" }}>{skill}</span>
-                                ))}
+                                <button 
+                                  onClick={() => setEditingProfile(true)}
+                                  className="mt-8 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+                                >
+                                  <EditIcon />
+                                  Edit Profile
+                                </button>
                             </div>
-                        </div>
+                        </SurfaceCard>
 
-                        <button
-                            onClick={() => {
-                                localStorage.removeItem("token");
-                                localStorage.removeItem("user");
-                                navigate("/login");
-                            }}
-                            style={{
-                                marginTop: "3rem",
-                                background: "transparent",
-                                color: "#ef4444",
-                                fontWeight: "600",
-                                fontSize: "0.85rem",
-                                width: "100%",
-                                textAlign: "center"
-                            }}
-                        >
-                            Sign Out
-                        </button>
+                        {/* Skills Section */}
+                        <SurfaceCard className="p-6 space-y-8">
+                            <div>
+                                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 text-center lg:text-left">Skills Offered</h3>
+                                <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+                                    {user.skillsOffered?.length > 0 ? (
+                                        user.skillsOffered.map((skill, i) => (
+                                          <Badge key={`${skill}-${i}`} variant="indigo">{skill}</Badge>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-slate-400 italic">No skills listed</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="pt-6 border-t border-slate-50">
+                                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 text-center lg:text-left">Skills Wanted</h3>
+                                <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+                                    {user.skillsWanted?.length > 0 ? (
+                                        user.skillsWanted.map((skill, i) => (
+                                          <Badge key={`${skill}-${i}`} variant="pink">{skill}</Badge>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-slate-400 italic">No skills listed</p>
+                                    )}
+                                </div>
+                            </div>
+                        </SurfaceCard>
                     </div>
 
-                    {/* Requests Section */}
-                    <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
-                        <h2 style={{ fontSize: "2rem", marginBottom: "2rem" }}>Swap Requests</h2>
+                    {/* Main Content: Stats & Requests */}
+                    <div className="lg:col-span-8 space-y-8">
+                        
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <StatCard label="Skills Offered" value={user.skillsOffered?.length || 0} accent="text-indigo-600" />
+                            <StatCard label="Skills Wanted" value={user.skillsWanted?.length || 0} accent="text-pink-600" />
+                            <StatCard label="Total Swap Requests" value={requests.length} accent="text-slate-900" />
+                        </div>
 
-                        {requests.length === 0 ? (
-                            <div className="glass" style={{ padding: "4rem", borderRadius: "32px", textAlign: "center" }}>
-                                <p style={{ color: "var(--text-muted)" }}>No requests yet. Explore and find mentors!</p>
+                        {/* Dashboard Card */}
+                        <SurfaceCard className="overflow-hidden">
+                            <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <h2 className="text-xl font-bold text-slate-900">Swap Requests</h2>
+                                
+                                <Tabs
+                                  value={activeTab}
+                                  onChange={setActiveTab}
+                                  items={[
+                                    { value: "all", label: "All" },
+                                    { value: "incoming", label: "Incoming" },
+                                    { value: "outgoing", label: "Outgoing" },
+                                  ]}
+                                />
                             </div>
-                        ) : (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-                                {requests.map(req => {
-                                    const isIncoming = req.receiver._id === user._id;
-                                    const otherUser = isIncoming ? req.sender : req.receiver;
 
-                                    return (
-                                        <div key={req._id} className="glass" style={{ padding: "1.5rem", borderRadius: "24px", display: "flex", gap: "1.5rem", alignItems: "start" }}>
-                                            <img
-                                                src={otherUser.avatar || `https://i.pravatar.cc/150?u=${otherUser._id}`}
-                                                alt={otherUser.username}
-                                                style={{ width: "50px", height: "50px", borderRadius: "15px" }}
-                                            />
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "1rem" }}>
-                                                    <div>
-                                                        <h3 style={{ fontSize: "1.1rem" }}>{isIncoming ? "From" : "To"} {otherUser.username}</h3>
-                                                        <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{new Date(req.createdAt).toLocaleDateString()}</p>
-                                                    </div>
-                                                    <span style={{
-                                                        padding: "0.3rem 0.8rem",
-                                                        borderRadius: "50px",
-                                                        fontSize: "0.75rem",
-                                                        fontWeight: "600",
-                                                        textTransform: "uppercase",
-                                                        background: req.status === "pending" ? "rgba(251, 191, 36, 0.1)" : req.status === "accepted" ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
-                                                        color: req.status === "pending" ? "#fbbf24" : req.status === "accepted" ? "#22c55e" : "#ef4444"
-                                                    }}>
-                                                        {req.status}
-                                                    </span>
-                                                </div>
-
-                                                <div style={{ display: "flex", gap: "2rem", marginBottom: "1rem" }}>
-                                                    <div>
-                                                        <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "0.3rem" }}>Teaching</p>
-                                                        <p style={{ fontWeight: "600", color: "var(--primary)" }}>{req.skillOffered}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "0.3rem" }}>Learning</p>
-                                                        <p style={{ fontWeight: "600", color: "var(--secondary)" }}>{req.skillWanted}</p>
-                                                    </div>
-                                                </div>
-
-                                                {req.message && (
-                                                    <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", background: "var(--surface-color)", padding: "1rem", borderRadius: "12px", marginBottom: "1.5rem", border: "1px solid var(--border)" }}>
-                                                        "{req.message}"
-                                                    </p>
-                                                )}
-
-                                                {isIncoming && req.status === "pending" && (
-                                                    <div style={{ display: "flex", gap: "1rem" }}>
-                                                        <button
-                                                            onClick={() => handleStatusUpdate(req._id, "accepted")}
-                                                            style={{ padding: "0.6rem 1.5rem", background: "var(--primary)", color: "white", borderRadius: "12px", fontWeight: "600", fontSize: "0.9rem" }}
-                                                        >
-                                                            Accept
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleStatusUpdate(req._id, "declined")}
-                                                            style={{ padding: "0.6rem 1.5rem", background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", borderRadius: "12px", fontWeight: "600", fontSize: "0.9rem" }}
-                                                        >
-                                                            Decline
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                            <div className="p-6">
+                                {filteredRequests.length === 0 ? (
+                                    <EmptyState
+                                      title="No swap requests yet"
+                                      description="When someone requests a swap with you (or you request one), it’ll show up here."
+                                      actionLabel="Explore Mentors"
+                                      onAction={() => navigate("/explore")}
+                                    />
+                                ) : (
+                                    <div className="space-y-4">
+                                        {filteredRequests.map((req) => (
+                                          <RequestCard
+                                            key={req._id}
+                                            request={req}
+                                            currentUserId={user?._id}
+                                            onAccept={(id) => handleStatusUpdate(id, "accepted")}
+                                            onReject={(id) => handleStatusUpdate(id, "declined")}
+                                          />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </SurfaceCard>
                     </div>
-
                 </div>
-            </div>
-            <style>{`
-        .label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem; margin-left: 0.5rem; }
-        .profile-input { width: 100%; padding: 0.8rem; background: var(--surface-hover); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); outline: none; font-family: inherit; }
-        .profile-input:focus { border-color: var(--primary); }
-        .save-btn { padding: 0.8rem; background: var(--primary); color: white; border-radius: 12px; font-weight: 600; margin-top: 0.5rem; }
-      `}</style>
+            </main>
+
+            {/* Edit Modal / Slide-over could be here - for now using a quick simple overlay */}
+            {editingProfile && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 self-center">
+                  <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                    <h3 className="font-bold text-slate-800">Edit Profile</h3>
+                    <button onClick={() => setEditingProfile(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+                  </div>
+                  <form onSubmit={handleUpdate} className="p-6 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Username</label>
+                        <input type="text" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" required />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Title</label>
+                        <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Bio</label>
+                        <textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all h-24" placeholder="A short intro about you…" />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Avatar URL</label>
+                        <input type="url" value={formData.avatar} onChange={(e) => setFormData({ ...formData, avatar: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Skills Offered (comma separated)</label>
+                        <textarea value={formData.skillsOffered} onChange={(e) => setFormData({ ...formData, skillsOffered: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all h-20" />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Skills Wanted (comma separated)</label>
+                        <textarea value={formData.skillsWanted} onChange={(e) => setFormData({ ...formData, skillsWanted: e.target.value })} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all h-20" />
+                    </div>
+                    <div className="pt-4 flex gap-3">
+                      <button type="button" onClick={() => setEditingProfile(false)} className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
+                      <button type="submit" className="flex-1 px-4 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100">Save Changes</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
             <Footer />
         </div>
     );

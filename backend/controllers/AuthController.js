@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import MailController from "./MailController.js";
 import sendMail from "./MailController.js";
+import passport from "../passport.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -81,6 +82,54 @@ AuthController.post("/login", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+// Google Auth
+AuthController.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+AuthController.get(
+  "/google/callback",
+  passport.authenticate("google", { session: false, failureRedirect: "/login" }),
+  (req, res) => {
+    const token = jwt.sign(
+      { id: req.user._id, email: req.user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || "1d" }
+    );
+    res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/login-success?token=${token}&user=${encodeURIComponent(JSON.stringify({
+      id: req.user._id,
+      username: req.user.username,
+      email: req.user.email,
+      role: req.user.role,
+    }))}`);
+  }
+);
+
+// GitHub Auth
+AuthController.get(
+  "/github",
+  passport.authenticate("github", { scope: ["user:email"] })
+);
+
+AuthController.get(
+  "/github/callback",
+  passport.authenticate("github", { session: false, failureRedirect: "/login" }),
+  (req, res) => {
+    const token = jwt.sign(
+      { id: req.user._id, email: req.user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || "1d" }
+    );
+    res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/login-success?token=${token}&user=${encodeURIComponent(JSON.stringify({
+      id: req.user._id,
+      username: req.user.username,
+      email: req.user.email,
+      role: req.user.role,
+    }))}`);
+  }
+);
 
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;

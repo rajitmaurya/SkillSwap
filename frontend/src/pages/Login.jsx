@@ -120,8 +120,11 @@ const Login = () => {
                                 gap: "0.5rem",
                                 fontSize: "0.9rem",
                                 color: "var(--text-main)",
-                                fontWeight: "600"
-                            }}>
+                                fontWeight: "600",
+                                cursor: "pointer"
+                            }}
+                                onClick={() => window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/google`}
+                            >
                                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" width="18" alt="G" />
                                 Google
                             </button>
@@ -137,8 +140,11 @@ const Login = () => {
                                 gap: "0.5rem",
                                 fontSize: "0.9rem",
                                 color: "var(--text-main)",
-                                fontWeight: "600"
-                            }}>
+                                fontWeight: "600",
+                                cursor: "pointer"
+                            }}
+                                onClick={() => window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/github`}
+                            >
                                 <img src="https://www.svgrepo.com/show/475654/github-color.svg" width="18" alt="G" />
                                 GitHub
                             </button>

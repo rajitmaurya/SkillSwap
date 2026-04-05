@@ -6,13 +6,34 @@ import UserController from "./controllers/UserController.js";
 import connectDB from "./controllers/dbController.js";
 import sendMail from "./controllers/MailController.js";
 import cors from "cors";
+import session from "express-session";
+import passport from "./passport.js";
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const PORT = process.env.PORT || 3000;
-app.use(cors());
+const allowedOrigins = ['http://localhost:5173', 'https://skill-swap-henna-mu.vercel.app'];
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "skillswap_secret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 //mongo connection
 connectDB();
