@@ -29,7 +29,7 @@ const Home = () => {
             _id: "1",
             username: "Alex Rivera",
             title: "UI/UX Designer",
-            avatar: "https://i.pravatar.cc/150?u=1",
+            avatar: "",
             skillsOffered: ["Figma", "Branding", "UI Design"],
             skillsWanted: ["React", "Node.js"]
         },
@@ -37,7 +37,7 @@ const Home = () => {
             _id: "2",
             username: "Sarah Chen",
             title: "Fullstack Developer",
-            avatar: "https://i.pravatar.cc/150?u=2",
+            avatar: "",
             skillsOffered: ["React", "Python", "SQL"],
             skillsWanted: ["Illustration", "English"]
         },
@@ -45,7 +45,7 @@ const Home = () => {
             _id: "3",
             username: "Marcus Thorne",
             title: "Marketing Lead",
-            avatar: "https://i.pravatar.cc/150?u=3",
+            avatar: "",
             skillsOffered: ["SEO", "AdWords", "Copywriting"],
             skillsWanted: ["Video Editing", "French"]
         },
@@ -53,7 +53,7 @@ const Home = () => {
             _id: "4",
             username: "Elena Gomez",
             title: "Digital Artist",
-            avatar: "https://i.pravatar.cc/150?u=4",
+            avatar: "",
             skillsOffered: ["Procreate", "Photoshop"],
             skillsWanted: ["Personal Finance", "React"]
         }

@@ -32,11 +32,29 @@ const SkillCard = ({ user }) => {
                 e.currentTarget.style.borderColor = "var(--glass-border)";
             }}>
                 <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "1.5rem" }}>
-                    <img
-                        src={user.avatar || `https://i.pravatar.cc/150?u=${user._id}`}
-                        alt={user.username}
-                        style={{ width: "60px", height: "60px", borderRadius: "20px", objectFit: "cover" }}
-                    />
+                    {user.avatar ? (
+                        <img
+                            src={user.avatar}
+                            alt={user.username}
+                            style={{ width: "60px", height: "60px", borderRadius: "20px", objectFit: "cover" }}
+                        />
+                    ) : (
+                        <div style={{
+                            width: "60px",
+                            height: "60px",
+                            borderRadius: "20px",
+                            background: "linear-gradient(135deg, var(--primary), var(--secondary))",
+                            color: "white",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "1.5rem",
+                            fontWeight: "bold",
+                            flexShrink: 0
+                        }}>
+                            {user.username ? user.username.charAt(0).toUpperCase() : '?'}
+                        </div>
+                    )}
                     <div>
                         <h3 style={{ fontSize: "1.1rem" }}>{user.username}</h3>
                         <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{user.title || "Skill Swapper"}</p>
