@@ -20,7 +20,7 @@ const Navbar = () => {
 
     return (
         <nav className="glass" style={{
-            position: "fixed",
+            position: "sticky",
             top: 0,
             width: "100%",
             zIndex: 1000,
