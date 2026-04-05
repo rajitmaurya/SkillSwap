@@ -45,22 +45,26 @@ const Badge = ({ variant = "indigo", children }) => {
   );
 };
 
-const StatCard = ({ label, value, accent = "text-slate-900" }) => (
-  <SurfaceCard className="p-6">
-    <p className="text-sm text-slate-500 font-medium">{label}</p>
-    <p className={cx("text-3xl font-bold mt-1", accent)}>{value}</p>
+const StatCard = ({ label, value, accent = "text-slate-900", dotColor="bg-slate-500" }) => (
+  <SurfaceCard className="relative p-6 overflow-hidden group hover:shadow-lg hover:border-slate-300 hover:-translate-y-1 transition-all duration-300">
+    <div className={cx("absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -mr-12 -mt-12 transition-all duration-500 group-hover:scale-150 opacity-20", dotColor)} />
+    <div className="flex items-center gap-2 mb-2 relative z-10">
+        <div className={cx("w-2 h-2 rounded-full", dotColor)} />
+        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{label}</p>
+    </div>
+    <p className={cx("text-4xl font-black relative z-10 tracking-tight", accent)}>{value}</p>
   </SurfaceCard>
 );
 
 const Tabs = ({ value, onChange, items }) => (
-  <div className="flex bg-slate-100 p-1 rounded-xl">
+  <div className="flex bg-slate-100/80 p-1.5 rounded-2xl shadow-inner border border-slate-200/50">
     {items.map((tab) => (
       <button
         key={tab.value}
         onClick={() => onChange(tab.value)}
         className={cx(
-          "px-4 py-1.5 text-sm font-semibold rounded-lg transition-all",
-          value === tab.value ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+          "px-5 py-2 text-sm font-bold rounded-xl transition-all duration-300",
+          value === tab.value ? "bg-white text-indigo-700 shadow-sm border border-slate-200/50" : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50"
         )}
         type="button"
       >
@@ -268,8 +272,20 @@ const Profile = () => {
         <div className="min-h-screen bg-[#f8fafc] font-['Outfit']">
             <Navbar />
             
-            {/* SaaS Banner */}
-            <div className="h-48 bg-gradient-to-r from-indigo-600 to-violet-700 w-full" />
+            {/* Premium SaaS Banner */}
+            <div className="h-56 w-full relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/30 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-violet-600/20 via-transparent to-transparent" />
+                <svg className="absolute w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="grid-pattern" width="32" height="32" patternUnits="userSpaceOnUse">
+                            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="white" strokeWidth="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+                </svg>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#f8fafc] to-transparent h-full transform translate-y-2/3" />
+            </div>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 pb-20">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -345,10 +361,10 @@ const Profile = () => {
                     <div className="lg:col-span-8 space-y-8">
                         
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <StatCard label="Skills Offered" value={user.skillsOffered?.length || 0} accent="text-indigo-600" />
-                            <StatCard label="Skills Wanted" value={user.skillsWanted?.length || 0} accent="text-pink-600" />
-                            <StatCard label="Total Swap Requests" value={requests.length} accent="text-slate-900" />
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                            <StatCard label="Skills Offered" value={user.skillsOffered?.length || 0} accent="text-indigo-600" dotColor="bg-indigo-500" />
+                            <StatCard label="Skills Wanted" value={user.skillsWanted?.length || 0} accent="text-pink-600" dotColor="bg-pink-500" />
+                            <StatCard label="Total Requests" value={requests.length} accent="text-slate-900" dotColor="bg-slate-500" />
                         </div>
 
                         {/* Dashboard Card */}
