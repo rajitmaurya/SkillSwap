@@ -50,7 +50,7 @@ const Navbar = () => {
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
     return (
-        <nav className="glass sticky top-0 w-full z-[1000] py-4 bg-white border-b border-[var(--glass-border)]">
+        <nav className="glass sticky top-0 w-full z-[1000] py-6 lg:py-4 bg-white border-b border-[var(--glass-border)] transition-all duration-300">
             <div className="container flex justify-between items-center">
                 <Link to="/" className="text-2xl font-extrabold bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] bg-clip-text text-transparent" style={{ background: "linear-gradient(to right, var(--primary), var(--secondary))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                     SkillSwap
@@ -167,7 +167,7 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Menu Overlay */}
-            <div className={`lg:hidden fixed inset-0 top-[73px] bg-white z-[900] transition-transform duration-300 transform ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}>
+            <div className={`lg:hidden fixed inset-0 top-[88px] bg-white z-[900] transition-transform duration-300 transform ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}>
                 <div className="flex flex-col p-6 gap-4">
                     <Link to="/explore" onClick={() => setIsMenuOpen(false)} className={`text-lg py-2 ${location.pathname === "/explore" ? "text-indigo-600 font-bold" : "text-slate-600"}`}>Explore</Link>
                     <a href="#" className="text-lg py-2 text-slate-600">Community</a>
