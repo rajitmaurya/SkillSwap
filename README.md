@@ -19,7 +19,7 @@ At the same time, many individuals already possess valuable skills but lack a pl
 
 ---
 
-## 💡 Motivation
+##  Motivation
 
 The idea behind SkillSwap came from a simple thought:  
 **“Why should learning be limited by money when people can learn from each other?”**
@@ -77,10 +77,10 @@ To build a platform where **knowledge becomes currency** and anyone can learn an
 
 ##  Future Improvements
 
-- 💬 Real-time chat (Socket.io)  
-- 🤖 AI-based skill matching  
-- ⭐ Rating & feedback system  
-- 📄 User profile page  
+-  Real-time chat (Socket.io)  
+-  AI-based skill matching  
+-  Rating & feedback system  
+-  User profile page  
 
 ---
 
