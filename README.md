@@ -1,4 +1,4 @@
-# 🚀 SkillSwap
+# SkillSwap
 
 >  Turning knowledge into currency through skill exchange  
 
@@ -10,7 +10,7 @@ SkillSwap is a MERN stack based platform that allows users to exchange skills wi
 
 ---
 
-## 🧠 Problem Statement
+##  Problem Statement
 
 In today’s digital world, most learning platforms are paid and not accessible to everyone.  
 Many students and learners are unable to afford expensive courses, even though they are eager to learn new skills.
@@ -29,7 +29,7 @@ This led to the development of a platform where knowledge can be shared freely a
 
 ---
 
-## 🎯 Objective
+##  Objective
 
 - Enable users to exchange skills without any monetary cost  
 - Create a collaborative learning environment  
@@ -38,20 +38,20 @@ This led to the development of a platform where knowledge can be shared freely a
 
 ---
 
-## 🌍 Vision
+##  Vision
 
 To build a platform where **knowledge becomes currency** and anyone can learn anything by sharing what they know.
 
 ---
 
-## ⚙️ Features
+##  Features
 
-- 🔐 User Authentication (JWT)
-- 👤 Skill-based User Profiles  
-- 🔍 Search Functionality  
-- 🧩 Category-based Filtering  
-- 🔄 Skill Exchange Request System (Backend)  
-- 📡 REST API Integration  
+-  User Authentication (JWT)
+-  Skill-based User Profiles  
+-  Search Functionality  
+-  Category-based Filtering  
+   Skill Exchange Request System (Backend)  
+-  REST API Integration  
 
 ---
 
@@ -65,7 +65,7 @@ To build a platform where **knowledge becomes currency** and anyone can learn an
 
 ---
 
-## 🚀 How It Works
+##  How It Works
 
 1. User signs up / logs in  
 2. Adds skills they can offer and want to learn  
@@ -75,7 +75,7 @@ To build a platform where **knowledge becomes currency** and anyone can learn an
 
 ---
 
-## 📌 Future Improvements
+##  Future Improvements
 
 - 💬 Real-time chat (Socket.io)  
 - 🤖 AI-based skill matching  
@@ -84,17 +84,17 @@ To build a platform where **knowledge becomes currency** and anyone can learn an
 
 ---
 
-## 🙌 Acknowledgement
+##  Acknowledgement
 
 Thanks to GeeksforGeeks and my mentors for organizing the hackathon and providing valuable guidance throughout the journey.
 
 ---
 
-## 👨‍💻 Author
+##  Author
 
 **Rajit Maurya**  
-MERN Stack Developer 🚀  
+MERN Stack Developer  
 
 ---
 
-⭐ If you like this project, don't forget to give it a star!
+ If you like this project, don't forget to give it a star!
