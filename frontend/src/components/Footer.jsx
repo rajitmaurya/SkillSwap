@@ -67,7 +67,7 @@ const Footer = () => {
           color: "var(--text-muted)",
           fontSize: "0.8rem"
         }}>
-          <p>© {new Date().getFullYear()} SkillSwap. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} SkillSwap. All rights reserved. @rajit</p>
           <div style={{ display: "flex", gap: "1.5rem" }}>
             <a href="#" style={{ color: "var(--text-muted)" }}>Twitter</a>
             <a href="#" style={{ color: "var(--text-muted)" }}>LinkedIn</a>
