@@ -4,6 +4,7 @@ import compression from "compression";
 import AuthController from "./controllers/AuthController.js";
 import SwapController from "./controllers/SwapController.js";
 import UserController from "./controllers/UserController.js";
+import ChatController from "./controllers/ChatController.js";
 import connectDB from "./controllers/dbController.js";
 import sendMail from "./controllers/MailController.js";
 import cors from "cors";
@@ -50,13 +51,61 @@ connectDB();
 app.use("/api/auth", AuthController);
 app.use("/api/users", UserController);
 app.use("/api/swaps", SwapController);
+app.use("/api/chat", ChatController);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
 
+import { createServer } from "http";
+import { Server } from "socket.io";
+import Message from "./models/Message.js";
 
-app.listen(PORT, () => {
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  socket.on("join", (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined their private room.`);
+  });
+
+  socket.on("sendMessage", async ({ sender, receiver, text }) => {
+    try {
+      const newMessage = new Message({ sender, receiver, text });
+      await newMessage.save();
+      
+      // Emit to receiver's room
+      io.to(receiver).emit("receiveMessage", {
+        sender,
+        text,
+        createdAt: newMessage.createdAt,
+      });
+      
+      // Also emit back to sender (optional, but good for confirmation if not optimistic)
+      io.to(sender).emit("receiveMessage", {
+        sender,
+        text,
+        createdAt: newMessage.createdAt,
+      });
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+httpServer.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

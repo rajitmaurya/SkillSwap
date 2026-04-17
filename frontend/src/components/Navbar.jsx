@@ -7,6 +7,7 @@ const BellIcon = ({ className }) => <svg className={className} xmlns="http://www
 const ChevronDownIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>;
 const MenuIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>;
 const CloseIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18" /><line x1="6" x2="18" y1="6" y2="18" /></svg>;
+const ChatIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -59,6 +60,7 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden lg:flex items-center gap-10">
           <Link to="/explore" style={{ fontSize: "0.9rem", color: location.pathname === "/explore" ? "var(--primary)" : "var(--text-muted)", fontWeight: location.pathname === "/explore" ? "600" : "400" }}>Explore</Link>
+          {isLoggedIn && <Link to="/chat" style={{ fontSize: "0.9rem", color: location.pathname === "/chat" ? "var(--primary)" : "var(--text-muted)", fontWeight: location.pathname === "/chat" ? "600" : "400" }}>Messages</Link>}
 
           {isLoggedIn ? (
             <div className="flex items-center gap-6">
@@ -169,6 +171,7 @@ const Navbar = () => {
       <div className={`lg:hidden fixed inset-0 top-[88px] bg-white z-[900] transition-transform duration-300 transform ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}>
         <div className="flex flex-col p-6 gap-4">
           <Link to="/explore" onClick={() => setIsMenuOpen(false)} className={`text-lg py-2 ${location.pathname === "/explore" ? "text-indigo-600 font-bold" : "text-slate-600"}`}>Explore</Link>
+          {isLoggedIn && <Link to="/chat" onClick={() => setIsMenuOpen(false)} className={`text-lg py-2 ${location.pathname === "/chat" ? "text-indigo-600 font-bold" : "text-slate-600"}`}>Messages</Link>}
 
           {isLoggedIn ? (
             <>

@@ -93,24 +93,43 @@ const SkillCard = ({ user }) => {
           </div>
         </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleRequestClick();
-          }}
-          style={{
-            width: "100%",
-            padding: "0.8rem",
-            background: "var(--surface-hover)",
-            color: "var(--text-main)",
-            borderRadius: "15px",
-            fontSize: "0.9rem",
-            fontWeight: "600",
-            border: "1px solid var(--border)"
-          }}
-        >
-          Request Swap
-        </button>
+        <div style={{ display: "flex", gap: "0.8rem" }}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRequestClick();
+            }}
+            style={{
+              flex: 1,
+              padding: "0.8rem",
+              background: "var(--surface-hover)",
+              color: "var(--text-main)",
+              borderRadius: "15px",
+              fontSize: "0.9rem",
+              fontWeight: "600",
+              border: "1px solid var(--border)"
+            }}
+          >
+            Request Swap
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate("/chat", { state: { userId: user._id } });
+            }}
+            style={{
+              padding: "0.8rem 1.2rem",
+              background: "rgba(79, 70, 229, 0.1)",
+              color: "var(--primary)",
+              borderRadius: "15px",
+              fontSize: "0.9rem",
+              fontWeight: "600",
+              border: "1px solid rgba(79, 70, 229, 0.2)"
+            }}
+          >
+            Message
+          </button>
+        </div>
       </div>
 
       <SwapModal
