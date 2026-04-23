@@ -6,10 +6,6 @@ SkillSwap is a MERN stack based platform that allows users to exchange skills wi
 
 ---
 
-
-
----
-
 ##  Problem Statement
 
 In today’s digital world, most learning platforms are paid and not accessible to everyone.  
