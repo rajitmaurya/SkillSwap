@@ -51,7 +51,7 @@ To build a platform where **knowledge becomes currency** and anyone can learn an
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 - **Frontend:** React (Vite)  
 - **Backend:** Node.js, Express.js  
