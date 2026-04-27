@@ -89,7 +89,7 @@ Thanks to GeeksforGeeks and my mentors for organizing the hackathon and providin
 ##  Author
 
 **Rajit Maurya**  
-MERN Stack Developer  
+MERN Stack Developer  | Exploring AI
 
 ---
 
