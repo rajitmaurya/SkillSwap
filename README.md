@@ -34,7 +34,7 @@ This led to the development of a platform where knowledge can be shared freely a
 
 ---
 
-##  Visi
+##  Vision
 
 To build a platform where **knowledge becomes currency** and anyone can learn anything by sharing what they know.
 
