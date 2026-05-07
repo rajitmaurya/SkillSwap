@@ -1,4 +1,4 @@
-# SkillSwap
+# SkillSwap skillExchange 
 
  Turning knowledge into currency through skill exchange  
 
