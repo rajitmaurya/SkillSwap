@@ -106,7 +106,7 @@ const Navbar = () => {
                     </div>
                   ) : (
                     pendingRequests.map(r => (
-                      <Link key={r._id} to="/profile" className="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 group/item">
+                      <Link key={r._id} to={`/profile?userId=${r.sender?._id || r.sender?.id}`} className="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 group/item">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 font-bold text-sm shadow-sm ring-2 ring-white">
                           {r.sender?.username?.charAt(0).toUpperCase() || '?'}
                         </div>
