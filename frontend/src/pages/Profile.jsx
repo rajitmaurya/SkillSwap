@@ -22,7 +22,12 @@ import {
   Stack,
   IconButton,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField
 } from "@mui/material";
 import {
   LocationOn as LocationIcon,
@@ -37,12 +42,112 @@ import {
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { cacheAvatar, cacheAvatarFile, getCachedAvatar } from "../utils/avatarCache.js";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  // Edit profile dialog states
+  const [editOpen, setEditOpen] = useState(false);
+  const [editUsername, setEditUsername] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [editLocation, setEditLocation] = useState("");
+  const [editSkillsOffered, setEditSkillsOffered] = useState("");
+  const [editSkillsWanted, setEditSkillsWanted] = useState("");
+  const [editAvatarFile, setEditAvatarFile] = useState(null);
+  const [editAvatarPreview, setEditAvatarPreview] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [cachedAvatar, setCachedAvatar] = useState("");
+
+  const handleOpenEdit = () => {
+    setEditUsername(user?.username || "");
+    setEditTitle(user?.title || "");
+    setEditBio(user?.bio || "");
+    setEditLocation(user?.location || "");
+    setEditSkillsOffered((user?.skillsOffered || []).join(", "));
+    setEditSkillsWanted((user?.skillsWanted || []).join(", "));
+    setEditAvatarFile(null);
+    setEditAvatarPreview(cachedAvatar || user?.avatar || "");
+    setEditOpen(true);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditAvatarPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append("username", editUsername);
+      formData.append("title", editTitle);
+      formData.append("bio", editBio);
+      formData.append("location", editLocation);
+
+      const skillsOfferedArray = editSkillsOffered.split(",").map(s => s.trim()).filter(Boolean);
+      const skillsWantedArray = editSkillsWanted.split(",").map(s => s.trim()).filter(Boolean);
+
+      formData.append("skillsOffered", JSON.stringify(skillsOfferedArray));
+      formData.append("skillsWanted", JSON.stringify(skillsWantedArray));
+
+      if (editAvatarFile) {
+        formData.append("avatarFile", editAvatarFile);
+      }
+
+      const res = await api.put("/auth/profile", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
+
+      const updatedUser = res.data.user;
+
+      setUser(prev => ({
+        ...prev,
+        ...updatedUser,
+        profileCompletion: updatedUser.avatar ? 100 : 85
+      }));
+
+      // Update localStorage
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const localUser = JSON.parse(userStr);
+        const newLocalUser = { ...localUser, ...updatedUser };
+        localStorage.setItem("user", JSON.stringify(newLocalUser));
+      }
+
+      // Sync local storage avatar cache
+      if (editAvatarFile) {
+        const base64 = await cacheAvatarFile(editAvatarFile).catch(err => console.error(err));
+        if (base64) setCachedAvatar(base64);
+      } else if (updatedUser.avatar) {
+        const base64 = await cacheAvatar(updatedUser.avatar).catch(err => console.error(err));
+        if (base64) setCachedAvatar(base64);
+      } else {
+        localStorage.removeItem("cachedAvatar");
+        setCachedAvatar("");
+      }
+
+      setEditOpen(false);
+    } catch (err) {
+      console.error("Error saving profile:", err);
+      alert(err.response?.data?.message || "Failed to save profile changes.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Dummy data for projects and reviews (as requested)
   const dummyProjects = [
@@ -78,24 +183,31 @@ const Profile = () => {
   ];
 
   useEffect(() => {
+    const cached = getCachedAvatar();
+    setCachedAvatar(cached);
+
     const fetchProfile = async () => {
       setLoading(true);
       try {
         const res = await api.get("/auth/profile");
-        // Fallback to dummy data if fields are missing in backend
         const profile = res.data;
         setUser({
           ...profile,
-          username: profile.username || "Rajit Maurya",
-          bio: profile.bio || "Full Stack Developer | MERN | Open Source Enthusiast",
-          location: profile.location || "Lucknow, India",
-          skillsOffered: profile.skillsOffered?.length ? profile.skillsOffered : ["React", "Node.js", "MongoDB"],
-          skillsWanted: profile.skillsWanted?.length ? profile.skillsWanted : ["AI", "Machine Learning"],
-          profileCompletion: 85 // Static dummy progress
+          username: profile.username || "",
+          bio: profile.bio || "",
+          location: profile.location || "",
+          skillsOffered: profile.skillsOffered || [],
+          skillsWanted: profile.skillsWanted || [],
+          profileCompletion: profile.avatar ? 100 : 85
         });
+
+        if (profile.avatar && !cached) {
+          cacheAvatar(profile.avatar).then(base64 => {
+            if (base64) setCachedAvatar(base64);
+          });
+        }
       } catch (err) {
         console.error("Error fetching profile:", err);
-        // If API fails, we navigate to login to ensure safety, or just show dummy data for preview
         if (err.response?.status === 401) {
           navigate("/login");
         } else {
@@ -164,7 +276,7 @@ const Profile = () => {
               
               <Box sx={{ mt: 6, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'center', sm: 'flex-end' }, gap: 3 }}>
                 <Avatar 
-                  src={user?.avatar} 
+                  src={cachedAvatar || user?.avatar} 
                   sx={{ 
                     width: 140, 
                     height: 140, 
@@ -194,6 +306,7 @@ const Profile = () => {
                   <Button 
                     variant="contained" 
                     startIcon={<EditIcon />}
+                    onClick={handleOpenEdit}
                     sx={{ 
                         borderRadius: '20px', 
                         px: 3, 
@@ -433,6 +546,110 @@ const Profile = () => {
 
         </Grid>
       </Container>
+
+      {/* Edit Profile Dialog */}
+      <Dialog 
+        open={editOpen} 
+        onClose={() => !saving && setEditOpen(false)} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 4, p: 2 }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Edit Profile</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3, mt: 1 }}>
+            <Avatar 
+              src={editAvatarPreview} 
+              sx={{ width: 100, height: 100, mb: 2, bgcolor: '#4f46e5', border: '3px solid #e0e7ff' }}
+            >
+              {editUsername?.charAt(0).toUpperCase()}
+            </Avatar>
+            <Button variant="outlined" component="label" size="small" sx={{ textTransform: 'none', borderRadius: '15px' }}>
+              Choose Photo
+              <input 
+                type="file" 
+                hidden 
+                accept="image/*" 
+                onChange={handleFileChange} 
+              />
+            </Button>
+          </Box>
+          <Stack spacing={2.5}>
+            <TextField
+              label="Username"
+              value={editUsername}
+              onChange={(e) => setEditUsername(e.target.value)}
+              fullWidth
+              variant="outlined"
+            />
+            <TextField
+              label="Professional Title"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              fullWidth
+              variant="outlined"
+            />
+            <TextField
+              label="Bio"
+              value={editBio}
+              onChange={(e) => setEditBio(e.target.value)}
+              fullWidth
+              multiline
+              rows={3}
+              variant="outlined"
+            />
+            <TextField
+              label="Location"
+              value={editLocation}
+              onChange={(e) => setEditLocation(e.target.value)}
+              fullWidth
+              variant="outlined"
+            />
+            <TextField
+              label="Skills Offered (comma-separated)"
+              value={editSkillsOffered}
+              onChange={(e) => setEditSkillsOffered(e.target.value)}
+              fullWidth
+              variant="outlined"
+              helperText="E.g., React, Node.js, Python, Figma"
+            />
+            <TextField
+              label="Skills Wanted (comma-separated)"
+              value={editSkillsWanted}
+              onChange={(e) => setEditSkillsWanted(e.target.value)}
+              fullWidth
+              variant="outlined"
+              helperText="E.g., AI, Machine Learning, UI Design"
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button 
+            onClick={() => setEditOpen(false)} 
+            disabled={saving}
+            sx={{ textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSaveProfile} 
+            disabled={saving}
+            variant="contained"
+            sx={{ 
+              textTransform: 'none', 
+              fontWeight: 600, 
+              bgcolor: '#4f46e5',
+              borderRadius: '15px',
+              px: 3,
+              '&:hover': { bgcolor: '#4338ca' }
+            }}
+          >
+            {saving ? <CircularProgress size={24} color="inherit" /> : "Save Changes"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Footer />
     </Box>

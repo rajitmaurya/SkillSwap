@@ -17,7 +17,9 @@ import {
   Divider,
   Stack,
   alpha,
-  useTheme
+  useTheme,
+  Button,
+  Chip
 } from "@mui/material";
 import {
   Send as SendIcon,
@@ -74,15 +76,41 @@ const Chat = () => {
 
   useEffect(() => {
     if (socket) {
-      socket.on("receiveMessage", (message) => {
+      const handleReceiveMessage = (message) => {
         if (activeChat && (message.sender === activeChat._id || message.sender === user?._id)) {
-          setMessages((prev) => [...prev, message]);
+          setMessages((prev) => {
+            if (prev.find(m => m._id === message._id)) return prev;
+            return [...prev, message];
+          });
         }
         // Refresh conversations list to show last message/updated order
         if (user) fetchConversations(user._id);
-      });
+      };
 
-      return () => socket.off("receiveMessage");
+      const handleSwapRequestUpdated = ({ requestId, status }) => {
+        setMessages((prev) =>
+          prev.map((msg) => {
+            if (msg.swapRequest && msg.swapRequest._id === requestId) {
+              return {
+                ...msg,
+                swapRequest: {
+                  ...msg.swapRequest,
+                  status: status
+                }
+              };
+            }
+            return msg;
+          })
+        );
+      };
+
+      socket.on("receiveMessage", handleReceiveMessage);
+      socket.on("swapRequestUpdated", handleSwapRequestUpdated);
+
+      return () => {
+        socket.off("receiveMessage", handleReceiveMessage);
+        socket.off("swapRequestUpdated", handleSwapRequestUpdated);
+      };
     }
   }, [socket, activeChat, user]);
 
@@ -126,14 +154,36 @@ const Chat = () => {
     setNewMessage("");
   };
 
+  const handleUpdateSwapStatus = async (requestId, status) => {
+    try {
+      await api.put(`/swaps/status/${requestId}`, { status });
+      setMessages((prev) =>
+        prev.map((msg) => {
+          if (msg.swapRequest && msg.swapRequest._id === requestId) {
+            return {
+              ...msg,
+              swapRequest: {
+                ...msg.swapRequest,
+                status: status
+              }
+            };
+          }
+          return msg;
+        })
+      );
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to update status");
+    }
+  };
+
   const handleSelectChat = (otherUser) => {
     setActiveChat(otherUser);
     fetchHistory(otherUser._id);
   };
 
   const filteredConversations = conversations.filter(c => 
-    c.name.toLowerCase().includes(search.toLowerCase()) || 
-    c.username?.toLowerCase().includes(search.toLowerCase())
+    (c.name || "").toLowerCase().includes(search.toLowerCase()) || 
+    (c.username || "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -239,27 +289,181 @@ const Chat = () => {
                 {/* Messages */}
                 <Box sx={{ flexGrow: 1, p: 3, overflowY: "auto", bgcolor: "var(--surface-color)" }}>
                   <Stack spacing={2}>
-                    {messages.map((msg, i) => (
-                      <Box key={i} sx={{ 
-                        alignSelf: msg.sender === user._id ? "flex-end" : "flex-start",
-                        maxWidth: "70%"
-                      }}>
-                        <Paper elevation={0} sx={{ 
-                          p: 1.5, 
-                          px: 2,
-                          borderRadius: msg.sender === user._id ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
-                          bgcolor: msg.sender === user._id ? "var(--primary)" : "var(--bg-color)",
-                          color: msg.sender === user._id ? "var(--text-on-primary)" : "var(--text-main)",
-                          boxShadow: msg.sender === user._id ? "0 4px 12px var(--primary-glow)" : "0 2px 4px rgba(0,0,0,0.02)",
-                          border: msg.sender === user._id ? "none" : "1px solid var(--border)"
+                    {messages.map((msg, i) => {
+                      const isMe = msg.sender === user._id;
+                      if (msg.type === "swap_request" && msg.swapRequest) {
+                        const req = msg.swapRequest;
+                        const isPending = req.status === "pending";
+                        const isAccepted = req.status === "accepted";
+                        const isDeclined = req.status === "declined";
+
+                        return (
+                          <Box key={i} sx={{ 
+                            alignSelf: isMe ? "flex-end" : "flex-start",
+                            width: "100%",
+                            maxWidth: "360px"
+                          }}>
+                            <Paper elevation={0} sx={{ 
+                              p: 2.5, 
+                              borderRadius: "24px",
+                              bgcolor: "var(--bg-color)",
+                              border: "1px solid var(--border)",
+                              boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
+                              position: "relative",
+                              overflow: "hidden"
+                            }}>
+                              {/* Header */}
+                              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                                <Box sx={{ 
+                                  width: 32, 
+                                  height: 32, 
+                                  borderRadius: "50%", 
+                                  bgcolor: "var(--primary-glow)", 
+                                  display: "flex", 
+                                  alignItems: "center", 
+                                  justifyContent: "center" 
+                                }}>
+                                  <Typography variant="body1" sx={{ fontSize: "1.1rem" }}>🤝</Typography>
+                                </Box>
+                                <Typography variant="subtitle2" fontWeight={800} color="var(--text-main)">
+                                  Swap Proposal
+                                </Typography>
+                              </Stack>
+
+                              {/* Skills Box */}
+                              <Stack spacing={1.5} sx={{ mb: 2, p: 2, bgcolor: "var(--surface-color)", borderRadius: "16px" }}>
+                                <Box>
+                                  <Typography variant="caption" color="var(--text-muted)" sx={{ display: "block", textTransform: "uppercase", fontSize: "0.65rem", fontWeight: 700, letterSpacing: 0.5 }}>
+                                    Offering (to teach)
+                                  </Typography>
+                                  <Typography variant="body2" fontWeight={700} color="var(--primary)" sx={{ mt: 0.5 }}>
+                                    {req.skillOffered}
+                                  </Typography>
+                                </Box>
+                                <Divider sx={{ opacity: 0.5 }} />
+                                <Box>
+                                  <Typography variant="caption" color="var(--text-muted)" sx={{ display: "block", textTransform: "uppercase", fontSize: "0.65rem", fontWeight: 700, letterSpacing: 0.5 }}>
+                                    Requesting (to learn)
+                                  </Typography>
+                                  <Typography variant="body2" fontWeight={700} color="var(--secondary)" sx={{ mt: 0.5 }}>
+                                    {req.skillWanted}
+                                  </Typography>
+                                </Box>
+                              </Stack>
+
+                              {/* Message if any */}
+                              {req.message && (
+                                <Typography variant="body2" color="var(--text-muted)" sx={{ mb: 2, fontStyle: "italic", fontSize: "0.85rem", borderLeft: "3px solid var(--border)", pl: 1.5 }}>
+                                  "{req.message}"
+                                </Typography>
+                              )}
+
+                              {/* Status Area */}
+                              <Box sx={{ mt: 2 }}>
+                                {isPending ? (
+                                  isMe ? (
+                                    /* Sender pending state */
+                                    <Stack direction="row" spacing={1} alignItems="center" sx={{ color: "var(--primary)" }}>
+                                      <Box sx={{ 
+                                        width: 8, 
+                                        height: 8, 
+                                        borderRadius: "50%", 
+                                        bgcolor: "var(--primary)",
+                                        animation: "pulse 1.5s infinite"
+                                      }} />
+                                      <Typography variant="body2" fontWeight={700}>
+                                        Waiting for request accept
+                                      </Typography>
+                                      <style>{`
+                                        @keyframes pulse {
+                                          0% { opacity: 0.4; }
+                                          50% { opacity: 1; }
+                                          100% { opacity: 0.4; }
+                                        }
+                                      `}</style>
+                                    </Stack>
+                                  ) : (
+                                    /* Receiver actions */
+                                    <Stack direction="row" spacing={1.5}>
+                                      <Button 
+                                        variant="contained" 
+                                        size="small" 
+                                        onClick={() => handleUpdateSwapStatus(req._id, "accepted")}
+                                        sx={{ 
+                                          flex: 1, 
+                                          bgcolor: "var(--primary)", 
+                                          color: "white", 
+                                          borderRadius: "12px",
+                                          fontWeight: 700,
+                                          textTransform: "none",
+                                          "&:hover": { bgcolor: "var(--primary)", opacity: 0.9 }
+                                        }}
+                                      >
+                                        Accept
+                                      </Button>
+                                      <Button 
+                                        variant="outlined" 
+                                        size="small" 
+                                        onClick={() => handleUpdateSwapStatus(req._id, "declined")}
+                                        sx={{ 
+                                          flex: 1, 
+                                          color: "var(--text-main)", 
+                                          borderColor: "var(--border)",
+                                          borderRadius: "12px",
+                                          fontWeight: 700,
+                                          textTransform: "none",
+                                          "&:hover": { borderColor: "var(--text-main)", bgcolor: "var(--surface-hover)" }
+                                        }}
+                                      >
+                                        Decline
+                                      </Button>
+                                    </Stack>
+                                  )
+                                ) : isAccepted ? (
+                                  <Box sx={{ p: 1, bgcolor: "rgba(16, 185, 129, 0.1)", borderRadius: "12px", textAlign: "center" }}>
+                                    <Typography variant="body2" fontWeight={700} color="#10b981">
+                                      Accepted 🎉
+                                    </Typography>
+                                  </Box>
+                                ) : (
+                                  <Box sx={{ p: 1, bgcolor: "rgba(239, 68, 68, 0.1)", borderRadius: "12px", textAlign: "center" }}>
+                                    <Typography variant="body2" fontWeight={700} color="#ef4444">
+                                      Declined
+                                    </Typography>
+                                  </Box>
+                                )}
+                              </Box>
+                            </Paper>
+                            <Typography variant="caption" sx={{ mt: 0.5, display: "block", textAlign: isMe ? "right" : "left", color: "var(--text-muted)", fontSize: "0.65rem" }}>
+                              {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </Typography>
+                          </Box>
+                        );
+                      }
+
+                      // Else render text message
+                      return (
+                        <Box key={i} sx={{ 
+                          alignSelf: isMe ? "flex-end" : "flex-start",
+                          maxWidth: "70%"
                         }}>
-                          <Typography variant="body2">{msg.text}</Typography>
-                        </Paper>
-                        <Typography variant="caption" sx={{ mt: 0.5, display: "block", textAlign: msg.sender === user._id ? "right" : "left", color: "var(--text-muted)", fontSize: "0.65rem" }}>
-                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </Typography>
-                      </Box>
-                    ))}
+                          <Paper elevation={0} sx={{ 
+                            p: 1.5, 
+                            px: 2,
+                            borderRadius: isMe ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
+                            bgcolor: isMe ? "var(--primary)" : "var(--bg-color)",
+                            color: isMe ? "var(--text-on-primary)" : "var(--text-main)",
+                            boxShadow: isMe ? "0 4px 12px var(--primary-glow)" : "0 2px 4px rgba(0,0,0,0.02)",
+                            border: isMe ? "none" : "1px solid var(--border)"
+                          }}>
+                            <Typography variant="body2">{msg.text}</Typography>
+                          </Paper>
+                          <Typography variant="caption" sx={{ mt: 0.5, display: "block", textAlign: isMe ? "right" : "left", color: "var(--text-muted)", fontSize: "0.65rem" }}>
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </Typography>
+                        </Box>
+                      );
+                    })}
                     <div ref={messagesEndRef} />
                   </Stack>
                 </Box>

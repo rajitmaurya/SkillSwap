@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { cacheAvatar } from "../utils/avatarCache.js";
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -19,6 +20,11 @@ const Login = () => {
             const res = await api.post("/auth/login", { email, password });
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
+            if (res.data.user?.avatar) {
+                await cacheAvatar(res.data.user.avatar).catch(err => console.error(err));
+            } else {
+                localStorage.removeItem("cachedAvatar");
+            }
             navigate("/profile");
         } catch (err) {
             setError(err.response?.data?.message || "Something went wrong. Please try again.");

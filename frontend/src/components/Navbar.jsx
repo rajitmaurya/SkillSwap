@@ -14,6 +14,8 @@ const Navbar = () => {
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [avatarSrc, setAvatarSrc] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -25,6 +27,12 @@ const Navbar = () => {
     if (token && userStr) {
       try {
         const user = JSON.parse(userStr);
+        setCurrentUser(user);
+
+        // Get cached avatar base64 or user avatar URL
+        const cached = localStorage.getItem("cachedAvatar");
+        setAvatarSrc(cached || user?.avatar || "");
+
         api.get("/swaps/my-requests").then(res => {
           const reqs = res.data;
           const pendingIncoming = reqs.filter(r => r.receiver?._id === user._id && r.status === "pending");
@@ -35,6 +43,8 @@ const Navbar = () => {
         // Ignore parsing errors
       }
     } else {
+      setCurrentUser(null);
+      setAvatarSrc("");
       setPendingRequestsCount(0);
       setPendingRequests([]);
     }
@@ -113,7 +123,20 @@ const Navbar = () => {
                 </div>
               </div>
 
-              <Link to="/profile" style={{ fontSize: "0.9rem", color: location.pathname === "/profile" ? "var(--primary)" : "var(--text-muted)", fontWeight: location.pathname === "/profile" ? "600" : "400" }}>Profile</Link>
+              <Link to="/profile" className="flex items-center gap-2" style={{ fontSize: "0.9rem", color: location.pathname === "/profile" ? "var(--primary)" : "var(--text-muted)", fontWeight: location.pathname === "/profile" ? "600" : "400" }}>
+                {avatarSrc ? (
+                  <img 
+                    src={avatarSrc} 
+                    alt={currentUser?.username} 
+                    className="w-7 h-7 rounded-full object-cover border border-slate-200"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-[10px]">
+                    {currentUser?.username?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                )}
+                <span>Profile</span>
+              </Link>
               <button
                 onClick={handleLogout}
                 style={{
@@ -182,7 +205,20 @@ const Navbar = () => {
               <Link to="/learning" onClick={() => setIsMenuOpen(false)} className="text-lg py-2 text-slate-600 flex justify-between items-center">
                 Learning <span className="text-[0.7rem] bg-pink-50 text-pink-600 px-2 py-1 rounded-full">Service</span>
               </Link>
-              <Link to="/profile" onClick={() => setIsMenuOpen(false)} className={`text-lg py-2 ${location.pathname === "/profile" ? "text-indigo-600 font-bold" : "text-slate-600"}`}>Profile Settings</Link>
+              <Link to="/profile" onClick={() => setIsMenuOpen(false)} className={`text-lg py-2 flex items-center gap-3 ${location.pathname === "/profile" ? "text-indigo-600 font-bold" : "text-slate-600"}`}>
+                {avatarSrc ? (
+                  <img 
+                    src={avatarSrc} 
+                    alt={currentUser?.username} 
+                    className="w-8 h-8 rounded-full object-cover border border-slate-200"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs">
+                    {currentUser?.username?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                )}
+                <span>Profile Settings</span>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="mt-4 w-full py-4 bg-rose-50 text-rose-600 rounded-2xl font-bold text-center"

@@ -73,9 +73,15 @@ AuthController.post("/login", async (req, res) => {
       token,
       user: {
         id: user._id,
+        _id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
+        skillsOffered: user.skillsOffered || [],
+        skillsWanted: user.skillsWanted || [],
+        avatar: user.avatar || "",
+        bio: user.bio || "",
+        location: user.location || "",
       },
     });
   } catch (err) {
@@ -100,9 +106,15 @@ AuthController.get(
     );
     res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/login-success?token=${token}&user=${encodeURIComponent(JSON.stringify({
       id: req.user._id,
+      _id: req.user._id,
       username: req.user.username,
       email: req.user.email,
       role: req.user.role,
+      skillsOffered: req.user.skillsOffered || [],
+      skillsWanted: req.user.skillsWanted || [],
+      avatar: req.user.avatar || "",
+      bio: req.user.bio || "",
+      location: req.user.location || "",
     }))}`);
   }
 );
@@ -124,9 +136,15 @@ AuthController.get(
     );
     res.redirect(`${process.env.FRONTEND_URL || "http://localhost:5173"}/login-success?token=${token}&user=${encodeURIComponent(JSON.stringify({
       id: req.user._id,
+      _id: req.user._id,
       username: req.user.username,
       email: req.user.email,
       role: req.user.role,
+      skillsOffered: req.user.skillsOffered || [],
+      skillsWanted: req.user.skillsWanted || [],
+      avatar: req.user.avatar || "",
+      bio: req.user.bio || "",
+      location: req.user.location || "",
     }))}`);
   }
 );
@@ -189,7 +207,7 @@ const upload = multer({ storage: storage });
 //update profile
 AuthController.put("/profile", verifyToken, upload.single('avatarFile'), async (req, res) => {
   try {
-    let { username, title, skillsOffered, skillsWanted, avatarUrl } = req.body;
+    let { username, title, bio, location, skillsOffered, skillsWanted, avatarUrl } = req.body;
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -203,16 +221,18 @@ AuthController.put("/profile", verifyToken, upload.single('avatarFile'), async (
        if (skillsWanted && typeof skillsWanted === 'string') skillsWanted = JSON.parse(skillsWanted);
     } catch(e) {}
 
-    if (username) user.username = username;
-    if (title) user.title = title;
-    if (skillsOffered) user.skillsOffered = skillsOffered;
-    if (skillsWanted) user.skillsWanted = skillsWanted;
+    if (username !== undefined) user.username = username;
+    if (title !== undefined) user.title = title;
+    if (bio !== undefined) user.bio = bio;
+    if (location !== undefined) user.location = location;
+    if (skillsOffered !== undefined) user.skillsOffered = skillsOffered;
+    if (skillsWanted !== undefined) user.skillsWanted = skillsWanted;
     
     // Handle avatar image
     if (req.file) {
       const protocol = req.headers['x-forwarded-proto'] || req.protocol;
       user.avatar = `${protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-    } else if (avatarUrl) {
+    } else if (avatarUrl !== undefined) {
       user.avatar = avatarUrl;
     }
 
@@ -225,6 +245,8 @@ AuthController.put("/profile", verifyToken, upload.single('avatarFile'), async (
         email: user.email,
         role: user.role,
         title: user.title,
+        bio: user.bio,
+        location: user.location,
         skillsOffered: user.skillsOffered,
         skillsWanted: user.skillsWanted,
         avatar: user.avatar

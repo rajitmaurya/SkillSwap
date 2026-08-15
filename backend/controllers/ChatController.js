@@ -12,7 +12,9 @@ router.get("/history/:userId/:otherUserId", async (req, res) => {
         { sender: userId, receiver: otherUserId },
         { sender: otherUserId, receiver: userId },
       ],
-    }).sort({ createdAt: 1 });
+    })
+      .populate("swapRequest")
+      .sort({ createdAt: 1 });
     res.json(messages);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch chat history" });
@@ -25,13 +27,16 @@ router.get("/conversations/:userId", async (req, res) => {
     const { userId } = req.params;
     const messages = await Message.find({
       $or: [{ sender: userId }, { receiver: userId }],
-    }).populate("sender receiver", "name profileImage");
+    }).populate("sender receiver", "username avatar");
 
     const users = new Map();
     messages.forEach((msg) => {
       const otherUser = msg.sender._id.toString() === userId ? msg.receiver : msg.sender;
       if (otherUser) {
-          users.set(otherUser._id.toString(), otherUser);
+          const uObj = otherUser.toObject ? otherUser.toObject() : { ...otherUser };
+          uObj.name = uObj.username;
+          uObj.profileImage = uObj.avatar;
+          users.set(otherUser._id.toString(), uObj);
       }
     });
 

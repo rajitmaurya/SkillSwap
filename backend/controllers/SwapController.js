@@ -2,6 +2,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import SwapRequest from "../models/SwapRequest.js";
 import User from "../models/User.js";
+import Message from "../models/Message.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -43,6 +44,31 @@ SwapController.post("/request", verifyToken, async (req, res) => {
         });
 
         await newRequest.save();
+
+        const newChatMessage = new Message({
+            sender: senderId,
+            receiver: receiverId,
+            text: `I proposed a swap: offering ${skillOffered} for ${skillWanted}.`,
+            type: "swap_request",
+            swapRequest: newRequest._id
+        });
+        await newChatMessage.save();
+
+        const io = req.app.get("io");
+        if (io) {
+            const populatedChatMessage = {
+                _id: newChatMessage._id,
+                sender: senderId,
+                receiver: receiverId,
+                text: newChatMessage.text,
+                type: "swap_request",
+                swapRequest: newRequest,
+                createdAt: newChatMessage.createdAt
+            };
+            io.to(receiverId).emit("receiveMessage", populatedChatMessage);
+            io.to(senderId).emit("receiveMessage", populatedChatMessage);
+        }
+
         res.status(201).json({ message: "Swap request sent successfully", request: newRequest });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -81,6 +107,18 @@ SwapController.put("/status/:requestId", verifyToken, async (req, res) => {
 
         request.status = status;
         await request.save();
+
+        const io = req.app.get("io");
+        if (io) {
+            io.to(request.sender.toString()).emit("swapRequestUpdated", {
+                requestId: request._id,
+                status: request.status
+            });
+            io.to(request.receiver.toString()).emit("swapRequestUpdated", {
+                requestId: request._id,
+                status: request.status
+            });
+        }
 
         res.status(200).json({ message: `Request ${status} successfully`, request });
     } catch (err) {

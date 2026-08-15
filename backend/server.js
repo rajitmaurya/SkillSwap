@@ -70,6 +70,8 @@ const io = new Server(httpServer, {
   },
 });
 
+app.set("io", io);
+
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
@@ -83,19 +85,21 @@ io.on("connection", (socket) => {
       const newMessage = new Message({ sender, receiver, text });
       await newMessage.save();
       
-      // Emit to receiver's room
-      io.to(receiver).emit("receiveMessage", {
+      const emitData = {
+        _id: newMessage._id,
         sender,
+        receiver,
         text,
+        type: newMessage.type,
+        swapRequest: newMessage.swapRequest,
         createdAt: newMessage.createdAt,
-      });
+      };
+
+      // Emit to receiver's room
+      io.to(receiver).emit("receiveMessage", emitData);
       
       // Also emit back to sender (optional, but good for confirmation if not optimistic)
-      io.to(sender).emit("receiveMessage", {
-        sender,
-        text,
-        createdAt: newMessage.createdAt,
-      });
+      io.to(sender).emit("receiveMessage", emitData);
     } catch (error) {
       console.error("Error saving message:", error);
     }

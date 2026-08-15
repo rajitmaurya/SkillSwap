@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { cacheAvatar } from "../utils/avatarCache.js";
 
 const LoginSuccess = () => {
     const navigate = useNavigate();
@@ -12,7 +13,18 @@ const LoginSuccess = () => {
 
         if (token && user) {
             localStorage.setItem("token", token);
-            localStorage.setItem("user", decodeURIComponent(user));
+            const decodedUser = decodeURIComponent(user);
+            localStorage.setItem("user", decodedUser);
+            try {
+                const parsedUser = JSON.parse(decodedUser);
+                if (parsedUser?.avatar) {
+                    cacheAvatar(parsedUser.avatar).catch(err => console.error(err));
+                } else {
+                    localStorage.removeItem("cachedAvatar");
+                }
+            } catch (e) {
+                console.error(e);
+            }
             navigate("/profile");
         } else {
             navigate("/login");
