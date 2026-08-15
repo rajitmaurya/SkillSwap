@@ -97,7 +97,7 @@ const SkillCard = ({ user }) => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleRequestClick();
+              navigate(`/profile?userId=${user._id || user.id}`);
             }}
             style={{
               flex: 1,
@@ -108,6 +108,25 @@ const SkillCard = ({ user }) => {
               fontSize: "0.9rem",
               fontWeight: "600",
               border: "1px solid var(--border)"
+            }}
+          >
+            View Profile
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRequestClick();
+            }}
+            style={{
+              flex: 1,
+              padding: "0.8rem",
+              background: "var(--primary)",
+              color: "white",
+              borderRadius: "15px",
+              fontSize: "0.9rem",
+              fontWeight: "600",
+              border: "none",
+              boxShadow: "0 4px 15px var(--primary-glow)"
             }}
           >
             Request Swap
