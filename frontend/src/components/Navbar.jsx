@@ -35,7 +35,7 @@ const Navbar = () => {
 
         api.get("/swaps/my-requests").then(res => {
           const reqs = res.data;
-          const pendingIncoming = reqs.filter(r => r.receiver?._id === user._id && r.status === "pending");
+          const pendingIncoming = reqs.filter(r => r.receiver?._id === (user._id || user.id) && r.status === "pending");
           setPendingRequestsCount(pendingIncoming.length);
           setPendingRequests(pendingIncoming);
         }).catch(e => console.error("Could not fetch requests", e));

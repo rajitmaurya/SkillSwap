@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import Message from "../models/Message.js";
 
 const router = express.Router();
@@ -7,6 +8,9 @@ const router = express.Router();
 router.get("/history/:userId/:otherUserId", async (req, res) => {
   try {
     const { userId, otherUserId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(otherUserId)) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
     const messages = await Message.find({
       $or: [
         { sender: userId, receiver: otherUserId },
@@ -25,6 +29,9 @@ router.get("/history/:userId/:otherUserId", async (req, res) => {
 router.get("/conversations/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
     const messages = await Message.find({
       $or: [{ sender: userId }, { receiver: userId }],
     }).populate("sender receiver", "username avatar");

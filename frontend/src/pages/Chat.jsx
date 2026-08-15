@@ -47,11 +47,11 @@ const Chat = () => {
     if (userStr) {
       const u = JSON.parse(userStr);
       setUser(u);
-      fetchConversations(u._id);
+      fetchConversations(u._id || u.id);
       
       // Check if we came here to chat with a specific user
       if (location.state?.userId) {
-        handleInitiateChat(location.state.userId, u._id);
+        handleInitiateChat(location.state.userId, u._id || u.id);
       }
     }
   }, [location.state]);
@@ -62,11 +62,11 @@ const Chat = () => {
       const res = await api.get(`/users/${otherUserId}`);
       const otherUser = res.data;
       setActiveChat(otherUser);
-      fetchHistory(otherUser._id);
+      fetchHistory(otherUser._id || otherUser.id);
       
       // Add to conversations if not already there (optimistically)
       setConversations(prev => {
-        if (prev.find(c => c._id === otherUserId)) return prev;
+        if (prev.find(c => (c._id || c.id) === otherUserId)) return prev;
         return [otherUser, ...prev];
       });
     } catch (err) {
@@ -77,14 +77,14 @@ const Chat = () => {
   useEffect(() => {
     if (socket) {
       const handleReceiveMessage = (message) => {
-        if (activeChat && (message.sender === activeChat._id || message.sender === user?._id)) {
+        if (activeChat && (message.sender === (activeChat._id || activeChat.id) || message.sender === (user?._id || user?.id))) {
           setMessages((prev) => {
-            if (prev.find(m => m._id === message._id)) return prev;
+            if (prev.find(m => (m._id || m.id) === message._id)) return prev;
             return [...prev, message];
           });
         }
         // Refresh conversations list to show last message/updated order
-        if (user) fetchConversations(user._id);
+        if (user) fetchConversations(user._id || user.id);
       };
 
       const handleSwapRequestUpdated = ({ requestId, status }) => {
@@ -129,7 +129,7 @@ const Chat = () => {
 
   const fetchHistory = async (otherUserId) => {
     try {
-      const res = await api.get(`/chat/history/${user._id}/${otherUserId}`);
+      const res = await api.get(`/chat/history/${user._id || user.id}/${otherUserId}`);
       setMessages(res.data);
     } catch (err) {
       console.error("Error fetching history", err);
@@ -145,8 +145,8 @@ const Chat = () => {
     if (!newMessage.trim() || !activeChat || !socket) return;
 
     const messageData = {
-      sender: user._id,
-      receiver: activeChat._id,
+      sender: user._id || user.id,
+      receiver: activeChat._id || activeChat.id,
       text: newMessage,
     };
 
@@ -178,7 +178,7 @@ const Chat = () => {
 
   const handleSelectChat = (otherUser) => {
     setActiveChat(otherUser);
-    fetchHistory(otherUser._id);
+    fetchHistory(otherUser._id || otherUser.id);
   };
 
   const filteredConversations = conversations.filter(c => 
@@ -229,16 +229,16 @@ const Chat = () => {
                 </Box>
               ) : (
                 filteredConversations.map((conv) => (
-                  <React.Fragment key={conv._id}>
+                  <React.Fragment key={conv._id || conv.id}>
                     <ListItem 
                       button 
                       onClick={() => handleSelectChat(conv)}
-                      selected={activeChat?._id === conv._id}
+                      selected={(activeChat?._id || activeChat?.id) === (conv._id || conv.id)}
                       sx={{ 
                         py: 2, 
                         px: 3,
                         transition: "all 0.2s",
-                        borderLeft: activeChat?._id === conv._id ? "4px solid var(--primary)" : "4px solid transparent",
+                        borderLeft: (activeChat?._id || activeChat?.id) === (conv._id || conv.id) ? "4px solid var(--primary)" : "4px solid transparent",
                         "&:hover": { bgcolor: "var(--surface-hover)" },
                         "&.Mui-selected": { bgcolor: "var(--primary-glow)", "&:hover": { bgcolor: "var(--primary-glow)" } }
                       }}
@@ -290,7 +290,7 @@ const Chat = () => {
                 <Box sx={{ flexGrow: 1, p: 3, overflowY: "auto", bgcolor: "var(--surface-color)" }}>
                   <Stack spacing={2}>
                     {messages.map((msg, i) => {
-                      const isMe = msg.sender === user._id;
+                      const isMe = msg.sender === (user._id || user.id);
                       if (msg.type === "swap_request" && msg.swapRequest) {
                         const req = msg.swapRequest;
                         const isPending = req.status === "pending";
