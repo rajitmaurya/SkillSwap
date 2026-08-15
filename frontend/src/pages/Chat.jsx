@@ -28,11 +28,12 @@ import {
   ArrowBack as ArrowBackIcon
 } from "@mui/icons-material";
 
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Chat = () => {
   const socket = useSocket();
   const location = useLocation();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
@@ -269,9 +270,22 @@ const Chat = () => {
           }}>
             {activeChat ? (
               <>
-                {/* Chat Header */}
-                <Box sx={{ p: 2, px: 3, borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 2 }}>
-                  <IconButton sx={{ display: { md: "none" } }} onClick={() => setActiveChat(null)}>
+                 {/* Chat Header */}
+                <Box 
+                  onClick={() => navigate(`/profile?userId=${activeChat._id || activeChat.id}`)}
+                  sx={{ 
+                    p: 2, 
+                    px: 3, 
+                    borderBottom: "1px solid var(--border)", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 2,
+                    cursor: "pointer",
+                    transition: "background 0.2s",
+                    "&:hover": { bgcolor: "var(--surface-hover)" }
+                  }}
+                >
+                  <IconButton sx={{ display: { md: "none" } }} onClick={(e) => { e.stopPropagation(); setActiveChat(null); }}>
                     <ArrowBackIcon />
                   </IconButton>
                   <Avatar src={activeChat.profileImage} sx={{ width: 40, height: 40, bgcolor: "var(--primary-glow)", color: "var(--primary)" }}>

@@ -17,7 +17,7 @@ const SkillCard = ({ user }) => {
 
   return (
     <>
-      <div className="glass" style={{
+      <div className="glass" onClick={() => navigate(`/profile?userId=${user._id || user.id}`)} style={{
         padding: "1.5rem",
         borderRadius: "24px",
         transition: "var(--transition)",

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Container,
   Box,
@@ -42,6 +42,7 @@ import {
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import SwapModal from "../components/SwapModal";
 import { cacheAvatar, cacheAvatarFile, getCachedAvatar } from "../utils/avatarCache.js";
 
 const Profile = () => {
@@ -62,6 +63,16 @@ const Profile = () => {
   const [editAvatarPreview, setEditAvatarPreview] = useState("");
   const [saving, setSaving] = useState(false);
   const [cachedAvatar, setCachedAvatar] = useState("");
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const viewUserId = searchParams.get("userId");
+
+  const loggedInUserStr = localStorage.getItem("user");
+  const loggedInUser = loggedInUserStr ? JSON.parse(loggedInUserStr) : null;
+  const isOwnProfile = !viewUserId || viewUserId === loggedInUser?._id || viewUserId === loggedInUser?.id;
+
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
 
   const handleOpenEdit = () => {
     setEditUsername(user?.username || "");
@@ -87,6 +98,11 @@ const Profile = () => {
     }
   };
 
+  const handleRemoveAvatar = () => {
+    setEditAvatarFile(null);
+    setEditAvatarPreview("");
+  };
+
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
@@ -104,6 +120,8 @@ const Profile = () => {
 
       if (editAvatarFile) {
         formData.append("avatarFile", editAvatarFile);
+      } else if (editAvatarPreview === "") {
+        formData.append("avatarUrl", "");
       }
 
       const res = await api.put("/auth/profile", formData, {
@@ -132,6 +150,9 @@ const Profile = () => {
       if (editAvatarFile) {
         const base64 = await cacheAvatarFile(editAvatarFile).catch(err => console.error(err));
         if (base64) setCachedAvatar(base64);
+      } else if (editAvatarPreview === "") {
+        localStorage.removeItem("cachedAvatar");
+        setCachedAvatar("");
       } else if (updatedUser.avatar) {
         const base64 = await cacheAvatar(updatedUser.avatar).catch(err => console.error(err));
         if (base64) setCachedAvatar(base64);
@@ -189,7 +210,8 @@ const Profile = () => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const res = await api.get("/auth/profile");
+        const endpoint = isOwnProfile ? "/auth/profile" : `/users/${viewUserId}`;
+        const res = await api.get(endpoint);
         const profile = res.data;
         setUser({
           ...profile,
@@ -201,24 +223,24 @@ const Profile = () => {
           profileCompletion: profile.avatar ? 100 : 85
         });
 
-        if (profile.avatar && !cached) {
+        if (isOwnProfile && profile.avatar && !cached) {
           cacheAvatar(profile.avatar).then(base64 => {
             if (base64) setCachedAvatar(base64);
           });
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
-        if (err.response?.status === 401) {
+        if (err.response?.status === 401 && isOwnProfile) {
           navigate("/login");
         } else {
-             // For demonstration purposes, if backend fails, set dummy user
+             // For demonstration purposes, if backend fails or user not logged in, set dummy user
              setUser({
-                username: "Rajit Maurya",
-                bio: "Full Stack Developer | MERN | Open Source Enthusiast",
+                username: isOwnProfile ? "Rajit Maurya" : "Bob Dev",
+                bio: isOwnProfile ? "Full Stack Developer | MERN" : "Node.js Mentor | Backend Engineer",
                 location: "Lucknow, India",
-                email: "rajit@example.com",
-                skillsOffered: ["React", "Node.js", "MongoDB"],
-                skillsWanted: ["AI", "Machine Learning"],
+                email: isOwnProfile ? "rajit@example.com" : "bob@example.com",
+                skillsOffered: isOwnProfile ? ["React", "Node.js", "MongoDB"] : ["Node.js", "Express"],
+                skillsWanted: isOwnProfile ? ["AI", "Machine Learning"] : ["React", "CSS"],
                 profileCompletion: 85,
                 avatar: ""
               });
@@ -229,7 +251,7 @@ const Profile = () => {
     };
 
     fetchProfile();
-  }, [navigate]);
+  }, [navigate, viewUserId]);
 
   if (loading) {
     return (
@@ -276,7 +298,7 @@ const Profile = () => {
               
               <Box sx={{ mt: 6, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'center', sm: 'flex-end' }, gap: 3 }}>
                 <Avatar 
-                  src={cachedAvatar || user?.avatar} 
+                  src={isOwnProfile ? (cachedAvatar || user?.avatar) : user?.avatar} 
                   sx={{ 
                     width: 140, 
                     height: 140, 
@@ -303,21 +325,52 @@ const Profile = () => {
                 </Box>
                 
                 <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-                  <Button 
-                    variant="contained" 
-                    startIcon={<EditIcon />}
-                    onClick={handleOpenEdit}
-                    sx={{ 
-                        borderRadius: '20px', 
-                        px: 3, 
-                        bgcolor: '#111827', 
-                        '&:hover': { bgcolor: '#1f2937' },
-                        textTransform: 'none',
-                        fontWeight: 600
-                    }}
-                  >
-                    Edit Profile
-                  </Button>
+                  {isOwnProfile ? (
+                    <Button 
+                      variant="contained" 
+                      startIcon={<EditIcon />}
+                      onClick={handleOpenEdit}
+                      sx={{ 
+                          borderRadius: '20px', 
+                          px: 3, 
+                          bgcolor: '#111827', 
+                          '&:hover': { bgcolor: '#1f2937' },
+                          textTransform: 'none',
+                          fontWeight: 600
+                      }}
+                    >
+                      Edit Profile
+                    </Button>
+                  ) : (
+                    <>
+                      <Button 
+                        variant="contained" 
+                        onClick={() => setIsSwapModalOpen(true)}
+                        sx={{ 
+                            borderRadius: '20px', 
+                            px: 3, 
+                            bgcolor: '#4f46e5', 
+                            '&:hover': { bgcolor: '#4338ca' },
+                            textTransform: 'none',
+                            fontWeight: 600
+                        }}
+                      >
+                        Request Swap
+                      </Button>
+                      <Button 
+                        variant="outlined" 
+                        onClick={() => navigate("/chat", { state: { userId: user?._id || user?.id } })}
+                        sx={{ 
+                            borderRadius: '20px', 
+                            px: 3, 
+                            textTransform: 'none',
+                            fontWeight: 600
+                        }}
+                      >
+                        Message
+                      </Button>
+                    </>
+                  )}
                   <Button 
                     variant="outlined" 
                     startIcon={<PersonAddIcon />}
@@ -566,15 +619,28 @@ const Profile = () => {
             >
               {editUsername?.charAt(0).toUpperCase()}
             </Avatar>
-            <Button variant="outlined" component="label" size="small" sx={{ textTransform: 'none', borderRadius: '15px' }}>
-              Choose Photo
-              <input 
-                type="file" 
-                hidden 
-                accept="image/*" 
-                onChange={handleFileChange} 
-              />
-            </Button>
+            <Stack direction="row" spacing={1}>
+              <Button variant="outlined" component="label" size="small" sx={{ textTransform: 'none', borderRadius: '15px' }}>
+                Choose Photo
+                <input 
+                  type="file" 
+                  hidden 
+                  accept="image/*" 
+                  onChange={handleFileChange} 
+                />
+              </Button>
+              {editAvatarPreview && (
+                <Button 
+                  variant="outlined" 
+                  color="error" 
+                  size="small" 
+                  onClick={handleRemoveAvatar}
+                  sx={{ textTransform: 'none', borderRadius: '15px' }}
+                >
+                  Remove Photo
+                </Button>
+              )}
+            </Stack>
           </Box>
           <Stack spacing={2.5}>
             <TextField
@@ -650,6 +716,12 @@ const Profile = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <SwapModal
+        isOpen={isSwapModalOpen}
+        onClose={() => setIsSwapModalOpen(false)}
+        receiver={user}
+      />
 
       <Footer />
     </Box>
